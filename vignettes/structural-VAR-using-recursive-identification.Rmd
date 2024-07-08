@@ -59,7 +59,7 @@ y_{t}=\nu+A_{1}y_{t-1}+\cdots+A_{p}y_{t-p}+u_{t},
 $$
 where 
 
-- the vector $\nu=\left(\nu_{1},\dots,\nu_{K}\right)^{\prime}$ is a $\left(K\times1\right)$ vector of intercept turns,
+- the vector $\nu=\left(\nu_{1},\dots,\nu_{K}\right)^{\prime}$ is a $\left(K\times1\right)$ vector of intercept terms,
 - the $A_i$, $i=1,\dots,p$, are $K \times K$ parameter matricies, and
 - the vector $u_t = \left( u_{1t},\dots,u_{Kt} \right)^{\prime}$ is a $K$-dimensional zero-mean white-noise process; that is, $u_t$ is assumed to be iid white noise with nonsingular covariance matrix $\Sigma_u$, $u_t \overset{\text{iid}}{\sim} \left( 0, \Sigma_u \right)$.
 
@@ -76,12 +76,32 @@ real GNP growth,
 the federal funds rate, and
 inflation measured using the GNP deflator.
 These data are included in `kilianLutkepohlCh02Macro`.
+
+```{r}
+library(dplyr)
+library(kilianr)
+library(ggplot2)
+library(patchwork)
+
+plt_rgnp <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = drgnp)) +
+  labs(x = "", y = "", title= "Real GNP growth")
+
+plt_ffr <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = irate)) +
+  labs(x = "", y = "", title= "Federal funds rate")
+
+plt_infl <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = infl)) +
+  labs(x = "", y = "", title= "GNP deflator inflation")
+
+# Using notation from the patchwork package to combine figures
+plt_rgnp / plt_ffr / plt_infl
+```
+
 The VAR($4$) model for $y_t = \left( \Delta \text{GNP}_t, \text{interest rate}_t, \Delta \text{price}_t \right)$ can be estimated by LS using the code show below.
 The function `olsvarc` includes a constant.
 ```{r setup}
-library(dplyr)
-library(kilianr)
-
 y <- kilianLutkepohlCh02Macro |> select(drgnp, irate, infl)
 sol <- olsvarc(y, p = 4)
 ```
@@ -116,3 +136,7 @@ print(round(sol$SIGMAhat, 4))
 These values agree with those found on page 34 for this example.
 
 ## Using short-run identification restrictions to recursively identify models
+
+A structural VAR identifies links among variables using economic theory.
+The identifying assumptions allow results to be interpreted causally.
+
