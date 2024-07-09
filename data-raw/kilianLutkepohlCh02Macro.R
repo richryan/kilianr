@@ -1,4 +1,4 @@
-## code to prepare `DATASET` dataset goes here
+## Code that prepares `kilianLutkepohlCh02Macro`
 
 library(here)
 library(readr)

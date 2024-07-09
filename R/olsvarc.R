@@ -41,5 +41,5 @@ olsvarc <- function(y, p) {
   Vhat <- Ahat[, 1, drop = FALSE]
   Ahat <- Ahat[, 2:(KK * pp + 1)]
 
-  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z))
+  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z, p=pp))
 }

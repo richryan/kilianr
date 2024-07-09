@@ -39,6 +39,9 @@ Good background reading includes
 
 In fact,
 you could think about this package as an extended advertisement for those resources.
+And purchasing a copy of 
+[*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06)
+is recommended.
 
 ## Least-squares estimation
 
@@ -135,8 +138,70 @@ print(round(sol$SIGMAhat, 4))
 
 These values agree with those found on page 34 for this example.
 
-## Using short-run identification restrictions to recursively identify models
+## Using short-run identification restrictions to recursively identify models: Cholesky decomposition
 
-A structural VAR identifies links among variables using economic theory.
-The identifying assumptions allow results to be interpreted causally.
+A structural VAR identifies correlations among variables using economic theory.
+The identifying assumptions allow the correlations to be interpreted causally.
 
+The $K$-dimensional structural VAR($p$) model is
+$$
+B_{0}y_{t}=B_{1}y_{t-1}+\cdots+B_{p}y_{t-p}+w_{t},
+$$
+where $w_t \sim \left( 0, \Sigma_w \right)$ are the structural errors.
+The structural errors have a diagonal covariance matrix $\Sigma_w$ and are serially uncorrelated. 
+The corresponding reduced form is
+$$
+\begin{align*}
+y_{t}	&=\underbrace{B_{0}^{-1}B_{1}}_{A_{1}}y_{t-1}+\cdots+\underbrace{B_{0}^{-1}B_{p}}_{A_{p}}y_{t-p}+\underbrace{B_{0}^{-1}w_{t}}_{u_{t}} \\
+	&=A_{1}y_{t-1}+\cdots+A_{p}y_{t-p}+u_{t}.
+\end{align*}
+$$
+Going from the reduced-form to structural representation requires knowledge of $B_0^{-1}$.
+The structural representation offers a causal interpretation of the correlations uncovered by the model.
+
+Recursive identificaiton is one of the most straightforward ways to identify a VAR model.
+This method decomposes $\widehat{\Sigma}_u$ using the Cholesky decomposition.
+Kilian and Lütkepohl discuss this approach in chapter 9 of [*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06).
+This example comes from that chapter discussed around figure 9.1,
+which is found on page 244.
+
+To confirm the reduced-form parameter estimates,
+the following code shows LS estimates 
+
+```{r}
+y_macro_oil <- kilianLutkepohlCh09Figure9_1 |> select(drpoil, infl, drgdp)
+sol_macro_oil <- olsvarc(y_macro_oil, p = 4)
+
+KK <- 3
+pp <- 4
+for (i in 1:pp) {
+  # The A_i hats have indices 1--K, (K+1)--2K, (2K+1)--3K, ...
+  # 1-3, 4-6, 7-9
+  print(paste0("A_", i, ": "))
+  print(round(sol_macro_oil$Ahat[, ((i - 1) * KK + 1):(i * KK)], 4))
+}
+```
+The residual variance--covariance matrix $\widehat{\Sigma}_u$ is
+```{r}
+print(round(sol_macro_oil$SIGMAhat, 4))
+```
+
+These estimates agree with those reported on page 243.
+
+The estimated $\text{chol} \left( \widehat{\Sigma}_u \right)$ is
+
+```{r}
+B0inv <- t(chol(sol_macro_oil$SIGMAhat))
+print(round(B0inv, 4))
+```
+The decomposition is such that $\text{chol} \left( \widehat{\Sigma}_u \right) = \widehat{B}_0^{-1}$ and
+$\left( \widehat{B}_0^{-1} \right) \left( \widehat{B}_0^{-1} \right)^{\prime} = \widehat{\Sigma}_u$.
+
+This agrees with the numbers reported on page 244.
+
+```{r}
+horizon <- 12
+irf_macro_oil <- irfvar(sol_macro_oil$Ahat, B0inv, p = sol_macro_oil$p, h = horizon)
+```
+
+## Empirical application: Kilian's "Not all oil price shocks are alike"
