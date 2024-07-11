@@ -4,7 +4,7 @@
 \alias{irfvar}
 \title{Compute structural impulse responses.}
 \usage{
-irfvar(Ahat, B0inv, p, h)
+irfvar(Ahat, B0inv, p, h, var_order)
 }
 \arguments{
 \item{Ahat}{A matrix of VAR parameters.}
@@ -14,6 +14,8 @@ irfvar(Ahat, B0inv, p, h)
 \item{p}{A number that represents the number of lags.}
 
 \item{h}{A number that represents the horizon.}
+
+\item{var_order}{A string of variable names that specify the VAR ordering.}
 }
 \value{
 A matrix of impulse responses

@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+devtools::build_rmd("vignettes/structural-VAR-using-recursive-identification.Rmd")
+
 ## Introduction
 
 Here are some useful functions that can be used to analyze 
@@ -25,7 +27,7 @@ A prime example of this method is used by Lutz Kilian in
 
 > Kilian, Lutz. 2009. "Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market." American Economic Review, 99 (3): 1053–69. DOI: 10.1257/aer.99.3.1053
 
-Functions in the package `kilianr` can:
+Functions in the package kilianr can:
 
 1. Estimate a VAR model by unrestricted least squares
 1. Identify models using Cholesky decompositions
@@ -82,6 +84,7 @@ These data are included in `kilianLutkepohlCh02Macro`.
 
 ```{r}
 library(dplyr)
+library(tidyr)
 library(kilianr)
 library(ggplot2)
 library(patchwork)
@@ -169,7 +172,8 @@ To confirm the reduced-form parameter estimates,
 the following code shows LS estimates 
 
 ```{r}
-y_macro_oil <- kilianLutkepohlCh09Figure9_1 |> select(drpoil, infl, drgdp)
+var_order_macro_oil <- c("drpoil", "infl", "drgdp")
+y_macro_oil <- kilianLutkepohlCh09Figure9_1 |> select(all_of(var_order_macro_oil))
 sol_macro_oil <- olsvarc(y_macro_oil, p = 4)
 
 KK <- 3
@@ -201,7 +205,57 @@ This agrees with the numbers reported on page 244.
 
 ```{r}
 horizon <- 12
-irf_macro_oil <- irfvar(sol_macro_oil$Ahat, B0inv, p = sol_macro_oil$p, h = horizon)
+dat_irf_macro_oil <- irfvar(sol_macro_oil$Ahat, B0inv, p = sol_macro_oil$p, h = horizon, var_order = var_order_macro_oil)
+head(dat_irf_macro_oil)
 ```
 
+The next chunk of code plots the responses of the US economy to an unexpected increase in the real price of oil.
+These estimates agree with those presented in figure 9.1.
+
+```{r}
+
+dat_plt_macro_oil <- dat_irf_macro_oil |> 
+  select(horizon, ends_with("_drpoil")) |> 
+  pivot_longer(starts_with("response_shock_"), names_to = "series", values_to = "response") |> 
+  arrange(series, horizon) |> 
+  group_by(series) |> 
+  mutate(response = cumsum(response))
+
+ggplot(data = dat_plt_macro_oil) +
+  geom_line(mapping = aes(x = horizon, y = response)) +
+  facet_wrap(vars(series), scales = "free")
+```
+
+This is visually close to figure 9.1.
+A better reproduction requires tuning each figure separately,
+which is undertaken in the code chunk below.
+
+```{r}
+plt_macro_oil_drpoil <- ggplot(data = filter(dat_plt_macro_oil, series == "response_shock_drpoil_drpoil")) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response)) +
+  labs(x = "Quarters", y = "", title = "Real price of oil") +
+  scale_x_continuous(breaks = seq(0, horizon, by = 5)) +
+  scale_y_continuous(breaks = seq(0, 20, by = 5), limits = c(0, 20)) 
+  
+plt_macro_oil_infl <- ggplot(data = filter(dat_plt_macro_oil, series == "response_shock_infl_drpoil")) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response)) +
+  labs(x = "Quarters", y = "", title = "GDP deflator") +
+  scale_x_continuous(breaks = seq(0, horizon, by = 5)) +
+  scale_y_continuous(breaks = seq(-1, 1, by = 0.5), limits = c(-1, 1)) 
+
+plt_macro_oil_drgdp <- ggplot(data = filter(dat_plt_macro_oil, series == "response_shock_drgdp_drpoil")) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response)) +
+  labs(x = "Quarters", y = "", title = "Real GDP") +
+  scale_x_continuous(breaks = seq(0, horizon, by = 5)) +
+  scale_y_continuous(breaks = seq(-1, 1, by = 0.5), limits = c(-1, 1)) 
+
+plt_macro_oil_drpoil | plt_macro_oil_infl | plt_macro_oil_drgdp
+```
+
+
 ## Empirical application: Kilian's "Not all oil price shocks are alike"
+
+So far

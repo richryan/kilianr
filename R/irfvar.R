@@ -4,6 +4,7 @@
 #' @param B0inv A matrix that corresponds to the structural impact multiplier matrix.
 #' @param p A number that represents the number of lags.
 #' @param h A number that represents the horizon.
+#' @param var_order A string of variable names that specify the VAR ordering.
 #'
 #' @return A matrix of impulse responses
 #' @importFrom expm %^%
@@ -11,7 +12,7 @@
 #'
 #' @examples
 #' IRF <- irfvar(sol$Ahat, B0inv, p, h)
-irfvar <- function(Ahat, B0inv, p, h) {
+irfvar <- function(Ahat, B0inv, p, h, var_order) {
   K <- nrow(B0inv)
 
   IK <- diag((p - 1) * K)
@@ -42,5 +43,17 @@ irfvar <- function(Ahat, B0inv, p, h) {
     IRF <- cbind(IRF, matrix(t(iIRF), ncol = 1))
   }
 
-  return(IRF)
+  rownames(IRF) <- get_irf_names(var_order)
+
+  dat_IRF <- as_tibble(t(IRF))
+  dat_IRF <- dat_IRF |>
+    mutate(horizon = 0:h) |>
+    select(horizon, everything())
+
+  return(dat_IRF)
+}
+
+get_irf_names <- function(v_names) {
+  irf_names <- kronecker(v_names, v_names, FUN = paste, sep = "_")
+  irf_names <- paste0("response_shock_", irf_names)
 }
