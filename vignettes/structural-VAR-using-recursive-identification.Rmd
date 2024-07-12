@@ -272,7 +272,118 @@ dat_global_oil_plt <- kilianLutkepohlCh12Figure12_5 |>
 p_oil_production <- ggplot(data = dat_global_oil_plt) +
   geom_line(mapping = aes(x = date, y = oil_supply)) +
   labs(x = "", y = "Percent", title = "Growth rate of global oil production") +
-  scale_y_continuous(breaks = seq(-10, 10, by = 5), limits = c(-10, 10))
+  scale_y_continuous(breaks = seq(-10, 10, by = 5), limits = c(-10, 10)) +
+  scale_x_date(expand = c(0, 0))  
+
+p_agg_demand <- ggplot(data = dat_global_oil_plt) +
+  geom_line(mapping = aes(x = date, y = agg_demand)) +
+  labs(x = "", y = "Percent", title = "Business cycle index of global real economic activity") +
+  scale_y_continuous(breaks = seq(-100, 100, by = 50), limits = c(-100, 100)) +
+  scale_x_date(expand = c(0, 0))
+
+p_rpoil <- ggplot(data = dat_global_oil_plt) +
+  geom_line(mapping = aes(x = date, y = rpoil)) +
+  labs(x = "", y = "Log", title = "Real price of oil") +
+  scale_y_continuous(breaks = seq(-3, -0.5, by = 1), limits = c(-3, 0))  +
+  scale_x_date(expand = c(0, 0))
+
+p_oil_production / p_agg_demand / p_rpoil
+```
+This figure is comparable to figure 12.4 of *Structural Vector Autoregressive Analysis*.
+
+```{r}
+y_global_oil <- kilianLutkepohlCh12Figure12_5 |> 
+  # mutate(check_oil_supply = detrendcl(oil_supply, tt = "constant")) |>   
+  mutate(across(c(oil_supply, agg_demand, rpoil), \(x) detrendcl(x, tt = "constant"))) |> 
+  rename(oilsupply = oil_supply,
+         aggdemand = agg_demand) |> 
+  select(-date) |> 
+  as.matrix()
+
+horizon <- 15
+
+sol_global_oil <- olsvarc(y_global_oil, p = 24)
+var_order_global_oil <- c("oilsupply", "aggdemand", "rpoil")
+dat_irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat, 
+                             B0inv = t(chol(sol_global_oil$SIGMAhat)),
+                             p = sol_global_oil$p, h = horizon, var_order = var_order_global_oil)
+```
+
+```{r}
+# Negative oil-supply shock
+p_oilsupply_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = -cumsum(response_shock_oilsupply_oilsupply))) +
+  labs(x = "", y = "Oil production", title = "Oil supply shock") +
+  scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_aggdemand_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = -response_shock_aggdemand_oilsupply)) +
+  labs(x = "", y = "Real activity", title = "Oil supply shock") +
+  scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_rpoil_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = -response_shock_rpoil_oilsupply)) +
+  labs(x = "", y = "Real price of oil", title = "Oil supply shock") +
+  scale_y_continuous(breaks = c(-0.05, 0, 0.05), limits = c(-0.075, 0.075)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+# Aggregate-demand shock
+p_oilsupply_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = cumsum(response_shock_oilsupply_aggdemand))) +
+  labs(x = "", y = "Oil production", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_aggdemand_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand)) +
+  labs(x = "", y = "Real activity", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = seq(-2, 8, by = 2), limits = c(-2, 8)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_rpoil_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand)) +
+  labs(x = "", y = "Real price of oil", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = c(-0.05, 0, 0.05), limits = c(-0.05, 0.1)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+# Oil-specific demand shock
+p_oilsupply_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = cumsum(response_shock_oilsupply_rpoil))) +
+  labs(x = "Months", y = "Oil production", title = "Oil-specific demand shock") +
+  scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_aggdemand_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil)) +
+  labs(x = "Months", y = "Real activity", title = "Oil-specific demand shock") +
+  scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+p_rpoil_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_rpoil)) +
+  labs(x = "Months", y = "Real price of oil", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = seq(0, 0.15, by = 0.05), limits = c(0.0, 0.15)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+(p_oilsupply_oilsupply | p_aggdemand_oilsupply | p_rpoil_oilsupply) / 
+  (p_oilsupply_aggdemand | p_aggdemand_aggdemand | p_rpoil_oilsupply) / 
+  (p_oilsupply_rpoil | p_aggdemand_rpoil | p_rpoil_rpoil) &
+    theme(plot.title = element_text(
+      size = 10
+    # size = rel(1.5), lineheight = .2, face = "plain"
+    # family = "Times", face = "bold.italic", colour = "red"
+  ))
 ```
 
 

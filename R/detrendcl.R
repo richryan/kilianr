@@ -33,5 +33,5 @@ detrendcl <- function(x, tt) {
   else {
     stop("Trend type 'tt' must be 'constant' or 'linear'.")
   }
-  return(y)
+  return(as.vector(y))
 }
