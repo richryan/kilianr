@@ -379,11 +379,7 @@ p_rpoil_rpoil <- ggplot(data = dat_irf_global_oil) +
 (p_oilsupply_oilsupply | p_aggdemand_oilsupply | p_rpoil_oilsupply) / 
   (p_oilsupply_aggdemand | p_aggdemand_aggdemand | p_rpoil_oilsupply) / 
   (p_oilsupply_rpoil | p_aggdemand_rpoil | p_rpoil_rpoil) &
-    theme(plot.title = element_text(
-      size = 10
-    # size = rel(1.5), lineheight = .2, face = "plain"
-    # family = "Times", face = "bold.italic", colour = "red"
-  ))
+    theme(plot.title = element_text(size = 10))
 ```
 
 
