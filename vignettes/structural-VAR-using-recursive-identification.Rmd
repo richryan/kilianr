@@ -258,4 +258,21 @@ plt_macro_oil_drpoil | plt_macro_oil_infl | plt_macro_oil_drgdp
 
 ## Empirical application: Kilian's "Not all oil price shocks are alike"
 
-So far
+So far the codes have been used to 
+estimate a VAR($p$) model and
+estimate impulse responses from a structural model identified recursively.
+To do inference
+
+```{r}
+p <- 24
+dat_global_oil_plt <- kilianLutkepohlCh12Figure12_5 |> 
+  mutate(junk = row_number()) |> 
+  filter(date > min(date) + months(p - 1))
+
+p_oil_production <- ggplot(data = dat_global_oil_plt) +
+  geom_line(mapping = aes(x = date, y = oil_supply)) +
+  labs(x = "", y = "Percent", title = "Growth rate of global oil production") +
+  scale_y_continuous(breaks = seq(-10, 10, by = 5), limits = c(-10, 10))
+```
+
+
