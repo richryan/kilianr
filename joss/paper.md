@@ -19,15 +19,38 @@ bibliography: paper.bib
 
 # Summary
 
-A vector autoregressive model identifies correlations between data series.
+<!---
+short-cut for inserting citation:
+Ctrl + Alt + ]
+-->
+
+Given time series on, say, gloabl oil production, global economic activity, and the price of oil,
+a vector autoregressive model identifies the correlations between the data series.
+How are the correlations to be interpreted causally?
+That is, how does a disruption in oil supply affect the price of oil?
+A prominent way to assign causality uses economic theory.
+Economic theory provides short-run restrictions that can be used.
+Economic theory posits restrictions among the correlations.
+There is good reason and evidence that oil production within the month
+does not respond to global economic activity or the price of oil [@kilian_2009; @anderson_kellogg_salant_2018].
+Restrictions like these can be translated into features of the statistical model,
+Restrictions like these can be translated into the statistical model,
+Timing restrictions like these can be used in the statistical model to
+generate a structural vector autoregression that allows correlations to be interpreted causally.
+Within this class of models,
+inference about responses of variables to unexpected shocks is straightforward
+The kilianr package implements these procedures (short-run, recursive identifying restrictions).
+The package builds directly upon @kilian_2009 and @kilian_lutkepohl_2017.
+
+---in a code base.
+
 How are those correlations causally?
 One way uses economic theory to specify restrictions that allow
 the correlations to be identified causally.
 One of the most prominent ways uses short-run identifying restrictions that
 recurisvely identify the model.
 In precise terms, TKTK.
-The kilianr package implements these procedures in a code base.
-The package builds directly upon @kilian_2009 and @kilian_lutkepohl_2017.
+
 
 The forces on stars, galaxies, and dark matter under external gravitational
 fields lead to the dynamical evolution of structures in the universe. The orbits
@@ -42,6 +65,7 @@ performing numerical orbit integration).
 @pfaff_2008
 
 @lange_etal_2021
+
 
 # NOTES: What to include
 
@@ -62,6 +86,7 @@ performing numerical orbit integration).
   - A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
   - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
   - Acknowledgement of any financial support.
+
 
 
 
