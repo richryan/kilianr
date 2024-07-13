@@ -1,5 +1,5 @@
 ---
-title: 'kilianr: an R Python package for structural vectorautoregressive analysis'
+title: 'kilianr: an R package for structural vector autoregressive analysis'
 tags:
   - R
   - structural vector autoregression
@@ -19,7 +19,15 @@ bibliography: paper.bib
 
 # Summary
 
-@kilian_2009 looks
+A vector autoregressive model identifies correlations between data series.
+How are those correlations causally?
+One way uses economic theory to specify restrictions that allow
+the correlations to be identified causally.
+One of the most prominent ways uses short-run identifying restrictions that
+recurisvely identify the model.
+In precise terms, TKTK.
+The kilianr package implements these procedures in a code base.
+The package builds directly upon @kilian_2009 and @kilian_lutkepohl_2017.
 
 The forces on stars, galaxies, and dark matter under external gravitational
 fields lead to the dynamical evolution of structures in the universe. The orbits
