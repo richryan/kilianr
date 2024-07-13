@@ -3,8 +3,8 @@ title: 'kilianr: an R Python package for structural vectorautoregressive analysi
 tags:
   - R
   - structural vector autoregression
-  -
-  -
+  - recursive identification
+  - Cholesky decomposition
   - oil
 authors:
   - name: Rich Ryan
