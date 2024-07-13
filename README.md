@@ -12,6 +12,28 @@ The goal of kilianr is to reproduce Lutz Kilian’s results from
 > Demand and Supply Shocks in the Crude Oil Market.” American Economic
 > Review, 99 (3): 1053–69. DOI: 10.1257/aer.99.3.1053
 
+Kilian’s insights about the identification of oil shocks—and associated
+tools—are then used to investigate how oil shocks affect Kern County,
+California. In other words, the goal is not creating an R package, per
+se; rather, the goal is using Kilian’s tools. This goal has dictated how
+the package is constructed. More packages are imported and suggested
+than what are strictly necessary to reproduce Kilian’s results.
+
+As a waypoint, I am attempting to publish a description of the package
+in [Journal of Open Source Software](https://joss.theoj.org/). The draft
+is included in `joss/paper.md`. To help cite work in the paper, I
+installed the RStudio Addin [citr](https://github.com/crsh/citr), which
+makes accessing entries in a .bib file easier.
+
+\*\*NOTE: This package uses the package `seasonal`, which is large.
+
+## Notes on formatting documentation using `roxygen2`
+
+For formatting documentation, I used
+<https://roxygen2.r-lib.org/articles/formatting.html>
+
+The link includes how to make a table.
+
 <!-- ## Installation -->
 <!-- You can install the development version of kilianr from [GitHub](https://github.com/) with: -->
 <!-- ``` r -->

@@ -39,6 +39,10 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
+@pfaff_2008
+
+@lange_etal_2021
+
 # NOTES: What to include
 
 - software has obvious research application

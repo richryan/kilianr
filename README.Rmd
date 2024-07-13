@@ -32,6 +32,12 @@ This goal has dictated how the package is constructed.
 More packages are imported and suggested than what are strictly necessary
 to reproduce Kilian's results.
 
+As a waypoint, 
+I am attempting to publish a description of the package in [Journal of Open Source Software](https://joss.theoj.org/).
+The draft is included in `joss/paper.md`.
+To help cite work in the paper, I installed the RStudio Addin [citr](https://github.com/crsh/citr),
+which makes accessing entries in a .bib file easier.
+
 **NOTE: This package uses the package `seasonal`, 
 which is large.
 
