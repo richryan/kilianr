@@ -39,6 +39,28 @@ Aside from toy problems and demonstrations, the majority of problems require
 efficient numerical tools, many of which require the same base code (e.g., for
 performing numerical orbit integration).
 
+# NOTES: What to include
+
+- software has obvious research application
+- JOSS publishes articles about research software. This definition includes software that: solves complex modeling problems in a scientific context (physics, mathematics, biology, medicine, social science, neuroscience, engineering); supports the functioning of research instruments or the execution of research experiments; extracts knowledge from large data sets; offers a mathematical library, or similar. While useful for many areas of research, pre-trained machine learning models and notebooks are not in-scope for JOSS.
+- As a rule of thumb, JOSS' minimum allowable contribution should represent not less than three months of work for an individual.
+- **Co-publication**: Sometimes authors prepare a JOSS publication alongside a contribution describing a science application, details of algorithm development, and/or methods assessment. In this circumstance, JOSS considers submissions for which the implementation of the software itself reflects a substantial scientific effort. This may be represented by the design of the software, the implementation of the algorithms, creation of tutorials, or any other aspect of the software. We ask that authors indicate whether related publications (published, in review, or nearing submission) exist as part of submitting to JOSS.
+- Submission process
+  - Make your software available in an open repository (GitHub, Bitbucket, etc.) and include an OSI approved open source license.
+  - Make sure that the software complies with the JOSS review criteria. In particular, your software should be full-featured, well-documented, and      contain procedures (such as automated tests) for checking correctness.
+  - Write a short paper in Markdown format using paper.md as file name, including a title, summary, author names, affiliations, and key references.     See our example paper to follow the correct format.
+  - (Optional) create a metadata file describing your software and include it in your repository. We provide a script that automates the generation      of this metadata.
+- Contents of paper: JOSS welcomes submissions from broadly diverse research areas. For this reason, we require that authors include in the paper some sentences that explain the software functionality and domain of use to a non-specialist reader. We also require that authors explain the research applications of the software. The paper should be between 250-1000 words. Authors submitting papers significantly longer than 1000 words may be asked to reduce the length of their paper.
+- What to include
+  - A list of the authors of the software and their affiliations, using the correct format (see the example below).
+  - A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.
+  - A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work.
+  - A list of key references, including to other software addressing related needs. Note that the references should include full names of venues, e.g., journals and conferences, not abbreviations only understood in the context of a specific discipline.
+  - Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
+  - Acknowledgement of any financial support.
+
+
+
 # Statement of need
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
