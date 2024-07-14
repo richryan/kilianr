@@ -37,6 +37,8 @@ I am attempting to publish a description of the package in [Journal of Open Sour
 The draft is included in `joss/paper.md`.
 To help cite work in the paper, I installed the RStudio Addin [citr](https://github.com/crsh/citr),
 which makes accessing entries in a .bib file easier.
+And the RStudio Addin [wordcountaddin](https://github.com/benmarwick/wordcountaddin),
+which provides a function that counts the number of words in a highlighted region.
 
 **NOTE: This package uses the package `seasonal`, 
 which is large.
