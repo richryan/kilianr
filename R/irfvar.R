@@ -5,6 +5,7 @@
 #' @param p A number that represents the number of lags.
 #' @param h A number that represents the horizon.
 #' @param var_order A string of variable names that specify the VAR ordering.
+#' @param return_tidy A logical indicator for whether to return a tidy data set (TRUE) or a matrix (FALSE).
 #'
 #' @return A matrix of impulse responses
 #' @importFrom expm %^%
@@ -12,7 +13,7 @@
 #'
 #' @examples
 #' IRF <- irfvar(sol$Ahat, B0inv, p, h)
-irfvar <- function(Ahat, B0inv, p, h, var_order) {
+irfvar <- function(Ahat, B0inv, p, h, var_order, return_tidy = TRUE) {
   K <- nrow(B0inv)
 
   IK <- diag((p - 1) * K)
@@ -43,14 +44,18 @@ irfvar <- function(Ahat, B0inv, p, h, var_order) {
     IRF <- cbind(IRF, matrix(t(iIRF), ncol = 1))
   }
 
-  rownames(IRF) <- get_irf_names(var_order)
+  rownames(IRF) <- get_irf_names(v_names = var_order)
 
   dat_IRF <- as_tibble(t(IRF))
   dat_IRF <- dat_IRF |>
     mutate(horizon = 0:h) |>
     select(horizon, everything())
 
-  return(dat_IRF)
+  if (return_tidy == TRUE) {
+    return(dat_IRF)
+  } else {
+    return(IRF)
+  }
 }
 
 get_irf_names <- function(v_names) {

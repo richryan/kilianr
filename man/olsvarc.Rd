@@ -25,7 +25,7 @@ A list with components\tabular{ll}{
 }
 }
 \description{
-Estimate a VAR model with an intercept using OLS.
+Details are provided on page 31 of Kilian, Lutz, and Helmut Lütkepohl. \emph{Structural Vector Autoregressive Analysis.}
 }
 \examples{
 sol <- olsvarc(y, p)

@@ -1,5 +1,7 @@
 #' Estimate a VAR model with an intercept using OLS.
 #'
+#' Details are provided on page 31 of Kilian, Lutz, and Helmut Lütkepohl. *Structural Vector Autoregressive Analysis.*
+#'
 #' @param y A matrix of data.
 #' @param p A positive integer, indicating the number of lags.
 #'
@@ -41,5 +43,5 @@ olsvarc <- function(y, p) {
   Vhat <- Ahat[, 1, drop = FALSE]
   Ahat <- Ahat[, 2:(KK * pp + 1)]
 
-  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z, p=pp))
+  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z, Y=Y, p=pp))
 }

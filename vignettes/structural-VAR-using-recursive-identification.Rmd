@@ -35,8 +35,8 @@ Functions in the package kilianr can:
 
 Good background reading includes
 
-- Kilian, Lutz, and Helmut Lütkepohl. Structural Vector Autoregressive Analysis. Cambridge: Cambridge University Press, 2017.
-- Helmut Lütkepohl. New Introduction to Multiple Time Series Analysis. Berlin: Springer, 2005.
+- Kilian, Lutz, and Helmut Lütkepohl. *Structural Vector Autoregressive Analysis*. Cambridge: Cambridge University Press, 2017.
+- Helmut Lütkepohl. *New Introduction to Multiple Time Series Analysis*. Berlin: Springer, 2005.
 
 
 In fact,
@@ -263,6 +263,8 @@ estimate a VAR($p$) model and
 estimate impulse responses from a structural model identified recursively.
 To do inference
 
+### Data
+
 ```{r}
 library(lubridate)
 
@@ -294,6 +296,8 @@ plt_oil_production / plt_agg_demand / plt_rpoil
 ```
 This figure is comparable to figure 12.4 of *Structural Vector Autoregressive Analysis*.
 
+### Estimation
+
 ```{r}
 y_global_oil <- kilianLutkepohlCh12Figure12_5 |> 
   # mutate(check_oil_supply = detrendcl(oil_supply, tt = "constant")) |>   
@@ -311,8 +315,6 @@ dat_irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
                              B0inv = t(chol(sol_global_oil$SIGMAhat)),
                              p = sol_global_oil$p, h = horizon, var_order = var_order_global_oil)
 ```
-
-
 
 The confidence sets can be estimated many ways.
 ```{r}
@@ -400,20 +402,56 @@ $$
 Y_t^{*r} = \widehat{\nu} + \widehat{\mathbf{A}} Y_{t-1}^{*r} + U_t^{*r}
 $$
 
-For the develping structural model,
+### Inference
+
+For the developing structural model,
 
 ```{r}
 tt <- nrow(y_global_oil)
-y <- t(y_global_oil)
+pp <- 24
 
-Y <- y[, pp:tt]
+# Another way to construct Y
+y_slow <- t(y_global_oil)
+Y_slow <- y_slow[, pp:tt]
 
 for (i in 1:(pp - 1)) {
-  Y <- rbind(Y, y[, (pp - i):(tt - i), drop = FALSE])
+  Y_slow <- rbind(Y_slow, y_slow[, (pp - i):(tt - i), drop = FALSE])
 }
 
+# benchmarkY <- function(y) {
+#   y <- t(y)
+#   Y <- y[, pp:tt]
+#   for (i in 1:(pp - 1)) {
+#     Y <- rbind(Y, y[, (pp - i):(tt - i), drop = FALSE])
+#   }
+#   Y
+# }
+# 
+# benchmarkSol <- function(sol) {
+#   Zt <- sol$Z[2:(KK * pp + 1),]
+#   Y <- rbind(sol$Y[, tt - pp, drop = FALSE], Zt[1:(KK * pp - KK), tt - pp, drop = FALSE])
+#   Y <- cbind(Zt, Y)
+#   Y
+# }
+# 
+# 
+# (lb <- bench::mark(
+#   benchmarkY(y_global_oil),
+#   benchmarkSol(sol_global_oil)
+# ))
+
+Zt <- sol_global_oil$Z[2:(KK * pp + 1),]
+
+Ytt <- rbind(sol_global_oil$Y[, tt - pp, drop = FALSE], Zt[1:(KK * pp - KK), tt - pp, drop = FALSE])
+Y <- cbind(Zt, Ytt)
+
+stopifnot(near(Y, Y_slow))
+
+vars_cumsum <- c("response_shock_oilsupply_oilsupply", 
+                 "response_shock_oilsupply_aggdemand",
+                 "response_shock_oilsupply_rpoil")
+
 KK <- 3
-pp <- 24
 IK <- diag((pp - 1) * KK)
 AP0 <- matrix(0, nrow = ((pp - 1) * KK), ncol = KK)
 A <- rbind(sol_global_oil$Ahat, cbind(IK, AP0))
@@ -421,39 +459,98 @@ A <- rbind(sol_global_oil$Ahat, cbind(IK, AP0))
 NU <- rbind(sol_global_oil$Vhat, matrix(0, nrow = KK * pp - KK, ncol = 1))
 
 
-rU <- matrix(NA, KK * pp, tt - pp) 
-rY <- matrix(NA, KK * pp, tt - pp) 
 U <- sol_global_oil$Uhat # dimension K x (tt - pp), tt is the number of data and pp is the VAR length
 
-rYdat <- matrix(NA, tt, kk)
-
 nrep <- 2000
-for (r in 1:1) {
+
+mIRF <- matrix(1, nrow = nrep, ncol = (KK^2) * (horizon + 1))
+
+for (r in 1:nrep) {
   print(paste0("Bootstrap replication...", r))
   
+  rY <- matrix(NA, KK * pp, tt - pp + 1) 
+  rU <- matrix(0, KK * pp, tt - pp)   
+  rydat <- matrix(NA, tt - pp, KK)  
+  
   # Initial condition
-  rpos <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
-  print(rpos)
-  rY0 <- Y[, rpos, drop = FALSE]
+  rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
+  rY0 <- Y[, rpos_y0, drop = FALSE]
+  rY[1:(KK * pp), 1] <- rY0
   
   # iid resampling
-  ind <- floor(runif(tt - pp, min = 0, max = 1) * (tt - pp)) + 1
-  print(ind)
-  rU[1:qq, 1:(tt - pp)] <- U[, ind] 
+  riid_index <- floor(runif(tt - pp, min = 0, max = 1) * (tt - pp)) + 1
+  # print(riid_index)
+  rU[1:KK, 1:(tt - pp)] <- U[, riid_index] 
   
-  rY[1:(KK * pp), 1] <- NU + A %*% rY0 + rU[1:(KK * pp), 1, drop = FALSE]
+  # rY1 <- NU + A %*% rY0 + rU[1:(KK * pp), 1, drop = FALSE]
+  # rY2 <- NU + A %*% rY1 + rU[1:(KK * pp), 2, drop = FALSE]
+  # rY3 <- NU + A %*% rY2 + rU[1:(KK * pp), 3, drop = FALSE]
   
-  for (i in 2:(tt - pp)) {
-    rY[1:(KK * pp), i] <- NU + A %*% rY[1:(KK * pp), i - 1, drop = FALSE] + rU[1:(KK * pp), i, drop = FALSE]
+  # rY[1:(KK * pp), 1] <- NU + A %*% rY0 + rU[1:(KK * pp), 1, drop = FALSE]
+  # rY[1:(KK * pp), 1] <- sol_global_oil$Vhat + sol_global_oil$Ahat %*% rY0 + rU[1:(KK * pp), 1, drop = FALSE]
+  
+  for (i in 2:(tt - pp + 1)) {
+    rY[1:(KK * pp), i] <- NU + A %*% rY[1:(KK * pp), i - 1, drop = FALSE] + rU[1:(KK * pp), i - 1, drop = FALSE]
+    rydat[i - 1, 1:KK] <- rY[1:KK, i]
   }
   
-  ry
+  # Concatenate the initial vector to rydat
+  rY0_wide <- matrix(rY0, nrow = pp, ncol = KK, byrow = TRUE)
+  rydat <- rbind(rY0_wide, rydat)
+  stopifnot(nrow(rydat) == tt)
+  
+  
+  rsol <- olsvarc(rydat, p = pp)
+  rB0inv <- t(chol(rsol$SIGMAhat))
+  rIRF <- irfvar(rsol$Ahat, rB0inv, p = pp, h = horizon, var_order = var_order_global_oil, return_tidy = FALSE)
+  
+  for (v in vars_cumsum) {
+    rIRF[v, ] <- cumsum(rIRF[v, ])
+  }
+  
+  mIRF[r, ] <- matrix(rIRF, nrow = 1)
 }
 
-# pos <- floor(runif(10000, min = 0, max = 1) * (tt - pp + 1)) + 1
-# hist(pos)
+IRF <- irfvar(Ahat = sol_global_oil$Ahat, 
+                             B0inv = t(chol(sol_global_oil$SIGMAhat)),
+                             p = sol_global_oil$p, h = horizon, var_order = var_order_global_oil,
+              return_tidy = FALSE)
+
+for (v in vars_cumsum) {
+  IRF[v, ] <- cumsum(IRF[v, ])
+  }
+
+IRF["response_shock_oilsupply_oilsupply", ] <- -IRF["response_shock_oilsupply_oilsupply", ]
+IRF["response_shock_aggdemand_oilsupply", ] <- -IRF["response_shock_aggdemand_oilsupply", ]
+IRF["response_shock_rpoil_oilsupply", ] <- -IRF["response_shock_rpoil_oilsupply", ]
+
+mIRFstd <- matrix(apply(mIRF, 2, sd), nrow = KK^2, ncol = horizon + 1)
+
+mCIlo <- IRF - 2 * mIRFstd
+mCIhi <- IRF + 2 * mIRFstd
+
+rownames(mCIlo) <- paste0(get_irf_names(var_order_global_oil), "_lo")
+rownames(mCIhi) <- paste0(get_irf_names(var_order_global_oil), "_hi")
+
+dat_CIlo <- as_tibble(t(mCIlo)) |> 
+  mutate(horizon = 0:horizon)
+
+dat_CIhi <- as_tibble(t(mCIhi)) |> 
+  mutate(horizon = 0:horizon)
+
+dat_CI <- dat_CIlo |> 
+  left_join(dat_CIhi, by = join_by(horizon))
+
+# dat_IRFstd <- dat_IRFstd |>
+#   mutate(horizon = 0:horizon) |>
+#   select(horizon, everything())
+
+# CIlo <- IRF - 2 * mIRFstd
+# CIhi <- IRF + 2 * mIRFstd
 ```
 
+
+### Plotting everything
 
 Here are the plots:
 
@@ -462,13 +559,18 @@ Here are the plots:
 plt_oilsupply_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
   geom_line(mapping = aes(x = horizon, y = -cumsum(response_shock_oilsupply_oilsupply))) +
+  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_lo)) + 
+  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_hi)) +   
   labs(x = "", y = "Oil production", title = "Oil supply shock") +
   scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+plt_oilsupply_oilsupply
 
 plt_aggdemand_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
   geom_line(mapping = aes(x = horizon, y = -response_shock_aggdemand_oilsupply)) +
+  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_lo)) + 
+  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_hi)) +     
   labs(x = "", y = "Real activity", title = "Oil supply shock") +
   scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
