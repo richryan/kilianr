@@ -12,7 +12,7 @@ authors:
     affiliation: "1" # (Multiple affiliations must be quoted)
 affiliations:
  - name: California State University, Bakersfield, USA
-date: 13 July 2024
+date: 14 July 2024
 bibliography: paper.bib
 
 ---
@@ -27,6 +27,7 @@ Ctrl + Alt + ]
 Given time series on, say, gloabl oil production, global economic activity, and the price of oil,
 a vector autoregressive model identifies the correlations between the data series.
 How are the correlations to be interpreted causally?
+How does a disruption in oil supply affect the price of oil?
 That is, how does a disruption in oil supply affect the price of oil?
 A prominent way to assign causality uses economic theory.
 Economic theory provides short-run restrictions that can be used.
