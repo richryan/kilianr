@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of kilianr is to reproduce Lutz Kilian's results from
+The goal of kilianr is to reproduce Lutz Kilian's results from  
 
 > Kilian, Lutz. 2009. "Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market." American Economic Review, 99 (3): 1053–69.  DOI: 10.1257/aer.99.3.1053
 

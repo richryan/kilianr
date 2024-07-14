@@ -5,14 +5,14 @@
 #' @param h
 #' @param nrep
 #' @param bootstrap_seed
-#' @param print_nrep
+#' @param display_progress_bar
 #'
 #' @return
 #' @import cli
 #' @export
 #'
 #' @examples
-bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, print_nrep = FALSE) {
+bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, display_progress_bar = TRUE) {
 
   if (!is.null(bootstrap_seed)) {
     set.seed(bootstrap_seed)
@@ -41,10 +41,16 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, p
 
   mIRF <- matrix(1, nrow = nrep, ncol = (KK^2) * (horizon + 1))
 
+
+  # Develop progress bar as needed
+  if (display_progress_bar == TRUE) {
+    cli::cli_progress_bar("Bootstrap reps", tot = nrep)
+    }
+
   for (r in 1:nrep) {
 
-    if (print_nrep == TRUE) {
-      print(paste0("Bootstrap replication...", r))
+    if (display_progress_bar == TRUE) {
+      cli::cli_progress_update()
     }
 
     rY <- matrix(NA, KK * pp, tt - pp + 1)
@@ -81,10 +87,11 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, p
                    var_cumsum = bootstrap_var_cumsum,
                    var_order = bootstrap_var_order)
 
-    print("CHECK ME")
-    print(rIRF$irfm)
-
     mIRF[r, ] <- matrix(rIRF$irfm, nrow = 1)
+  }
+
+  if (display_progress_bar == TRUE) {
+    cli::cli_progress_done()
   }
 
   # Compute the confidence intervals
