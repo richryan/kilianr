@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^kilianr\.Rcheck$
+^kilianr.*\.tar\.gz$
+^kilianr.*\.tgz$
+^data-raw$
+^joss$
