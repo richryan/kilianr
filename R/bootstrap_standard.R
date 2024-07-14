@@ -25,10 +25,9 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, p
   pp <- olsobj$p
   KK <- olsobj$K
 
-  var_order <- irfobj$var_order
-  var_cumsum <- irfobj$var_cumsum
-  negative_shocks <-irfobj$negative_shocks
-  print(negative_shocks)
+  bootstrap_var_order <- irfobj$var_order
+  bootstrap_var_cumsum <- irfobj$var_cumsum
+  bootstrap_negative_shocks <-irfobj$negative_shocks
 
   irf_matrix <- irfobj$irfm
 
@@ -74,7 +73,16 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, p
 
     rsol <- olsvarc(y = rydat, p = pp)
     rB0inv <- t(chol(rsol$SIGMAhat))
-    rIRF <- irfvar(rsol$Ahat, rB0inv, p = pp, h = horizon, var_order = var_order, var_cumsum = var_cumsum, negative_shocks = negative_shocks)
+    rIRF <- irfvar(Ahat = rsol$Ahat,
+                   B0inv = rB0inv,
+                   p = pp,
+                   h = horizon,
+                   negative_shocks = bootstrap_negative_shocks,
+                   var_cumsum = bootstrap_var_cumsum,
+                   var_order = bootstrap_var_order)
+
+    print("CHECK ME")
+    print(rIRF$irfm)
 
     mIRF[r, ] <- matrix(rIRF$irfm, nrow = 1)
   }
@@ -82,8 +90,8 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep, bootstrap_seed = NULL, p
   # Compute the confidence intervals
   mIRFstd <- matrix(apply(mIRF, 2, sd), nrow = KK^2, ncol = horizon + 1)
 
-  mCIlo <- IRF - 2 * mIRFstd
-  mCIhi <- IRF + 2 * mIRFstd
+  mCIlo <- irf_matrix - 2 * mIRFstd
+  mCIhi <- irf_matrix + 2 * mIRFstd
 
   rownames(mCIlo) <- paste0(get_irf_names(var_order_global_oil), "_lo")
   rownames(mCIhi) <- paste0(get_irf_names(var_order_global_oil), "_hi")

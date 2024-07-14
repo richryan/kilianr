@@ -323,6 +323,9 @@ irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
                         var_cumsum = var_cumsum_global_oil,
                         var_order = var_order_global_oil)
 dat_irf_global_oil <- irf_global_oil$irf_tidy
+
+ggplot(data = dat_irf_global_oil) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply))
 ```
 
 ### Inference
@@ -607,8 +610,8 @@ Here are the plots:
 plt_oilsupply_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
   geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply)) + 
-  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = -response_shock_oilsupply_oilsupply_lo)) + 
-  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = -response_shock_oilsupply_oilsupply_hi)) +
+  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_lo)) +
+  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_hi)) +
   labs(x = "", y = "Oil production", title = "Oil supply shock") 
   # scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
   # scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
