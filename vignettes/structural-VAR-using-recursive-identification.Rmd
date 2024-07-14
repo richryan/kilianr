@@ -311,10 +311,42 @@ horizon <- 15
 
 sol_global_oil <- olsvarc(y_global_oil, p = 24)
 var_order_global_oil <- c("oilsupply", "aggdemand", "rpoil")
-dat_irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat, 
-                             B0inv = t(chol(sol_global_oil$SIGMAhat)),
-                             p = sol_global_oil$p, h = horizon, var_order = var_order_global_oil)
+var_cumsum_global_oil <- c("response_shock_oilsupply_oilsupply", 
+                           "response_shock_oilsupply_aggdemand",
+                           "response_shock_oilsupply_rpoil")
+negative_shocks_global_oil <- c("oilsupply")
+
+irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat, 
+                        B0inv = t(chol(sol_global_oil$SIGMAhat)),
+                        p = sol_global_oil$p, h = horizon, 
+                        negative_shocks = negative_shocks_global_oil,
+                        var_cumsum = var_cumsum_global_oil,
+                        var_order = var_order_global_oil)
+dat_irf_global_oil <- irf_global_oil$irf_tidy
 ```
+
+### Inference
+
+The code base makes computation of the confidence sets strightforward.
+```{r}
+nrep <- 20
+dat_irf_global_oil_cs <- bootstrap_standard(olsobj = sol_global_oil, 
+                                            irfobj = irf_global_oil, 
+                                            nrep = nrep, 
+                                            h = horizon, 
+                                            bootstrap_seed = 676, print_nrep = FALSE)
+```
+
+
+
+```{r}
+nrep <- 20
+dat_irf_global_oil_cs_1 <- bootstrap_standard(olsobj = sol_global_oil, irfobj = irf_global_oil, h = horizon, bootstrap_seed = 676, nrep = nrep)
+dat_irf_global_oil_cs_2 <- bootstrap_standard(olsobj = sol_global_oil, irfobj = irf_global_oil, h = horizon, bootstrap_seed = 676, nrep = nrep)
+
+all.equal(dat_irf_global_oil_cs_1, dat_irf_global_oil_cs_2)
+```
+
 
 The confidence sets can be estimated many ways.
 ```{r}
@@ -402,7 +434,7 @@ $$
 Y_t^{*r} = \widehat{\nu} + \widehat{\mathbf{A}} Y_{t-1}^{*r} + U_t^{*r}
 $$
 
-### Inference
+### OLD Inference
 
 For the developing structural model,
 
@@ -516,13 +548,29 @@ IRF <- irfvar(Ahat = sol_global_oil$Ahat,
                              p = sol_global_oil$p, h = horizon, var_order = var_order_global_oil,
               return_tidy = FALSE)
 
+negative_shocks <- c("oilsupply", "aggdemand")
+my_rownames <- rownames(IRF)
+
+negative_shocks_to_adjust <- vector(mode = "character")
+for (ns in negative_shocks) {
+  ns_adj <- my_rownames[stringr::str_detect(my_rownames, paste0("_", ns, "$"))]
+  negative_shocks_to_adjust <- c(negative_shocks_to_adjust, ns_adj)
+}
+
+for (ns in negative_shocks_to_adjust) {
+  IRF[ns, ] <- -IRF[ns, ]
+}
+
+
+# negative_shocks_to_adjust <- my_rownames[stringr::str_detect(my_rownames, "_oilsupply$")]
+
 for (v in vars_cumsum) {
   IRF[v, ] <- cumsum(IRF[v, ])
   }
 
-IRF["response_shock_oilsupply_oilsupply", ] <- -IRF["response_shock_oilsupply_oilsupply", ]
-IRF["response_shock_aggdemand_oilsupply", ] <- -IRF["response_shock_aggdemand_oilsupply", ]
-IRF["response_shock_rpoil_oilsupply", ] <- -IRF["response_shock_rpoil_oilsupply", ]
+# IRF["response_shock_oilsupply_oilsupply", ] <- -IRF["response_shock_oilsupply_oilsupply", ]
+# IRF["response_shock_aggdemand_oilsupply", ] <- -IRF["response_shock_aggdemand_oilsupply", ]
+# IRF["response_shock_rpoil_oilsupply", ] <- -IRF["response_shock_rpoil_oilsupply", ]
 
 mIRFstd <- matrix(apply(mIRF, 2, sd), nrow = KK^2, ncol = horizon + 1)
 
@@ -558,26 +606,26 @@ Here are the plots:
 # Negative oil-supply shock
 plt_oilsupply_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
-  geom_line(mapping = aes(x = horizon, y = -cumsum(response_shock_oilsupply_oilsupply))) +
-  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_lo)) + 
-  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_hi)) +   
-  labs(x = "", y = "Oil production", title = "Oil supply shock") +
-  scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
-  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply)) + 
+  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = -response_shock_oilsupply_oilsupply_lo)) + 
+  geom_line(data = dat_irf_global_oil_cs, mapping = aes(x = horizon, y = -response_shock_oilsupply_oilsupply_hi)) +
+  labs(x = "", y = "Oil production", title = "Oil supply shock") 
+  # scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
+  # scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
 plt_oilsupply_oilsupply
 
 plt_aggdemand_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
-  geom_line(mapping = aes(x = horizon, y = -response_shock_aggdemand_oilsupply)) +
-  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_lo)) + 
-  geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_hi)) +     
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply)) +
+  # geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_lo)) + 
+  # geom_line(data = dat_CI, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_hi)) +     
   labs(x = "", y = "Real activity", title = "Oil supply shock") +
   scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
 
 plt_rpoil_oilsupply <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
-  geom_line(mapping = aes(x = horizon, y = -response_shock_rpoil_oilsupply)) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply)) +
   labs(x = "", y = "Real price of oil", title = "Oil supply shock") +
   scale_y_continuous(breaks = c(-0.05, 0, 0.05), limits = c(-0.075, 0.075)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
@@ -585,7 +633,7 @@ plt_rpoil_oilsupply <- ggplot(data = dat_irf_global_oil) +
 # Aggregate-demand shock
 plt_oilsupply_aggdemand <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
-  geom_line(mapping = aes(x = horizon, y = cumsum(response_shock_oilsupply_aggdemand))) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand)) +
   labs(x = "", y = "Oil production", title = "Aggregate demand shock") +
   scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
@@ -607,7 +655,7 @@ plt_rpoil_aggdemand <- ggplot(data = dat_irf_global_oil) +
 # Oil-specific demand shock
 plt_oilsupply_rpoil <- ggplot(data = dat_irf_global_oil) +
   geom_hline(yintercept = 0.0) +
-  geom_line(mapping = aes(x = horizon, y = cumsum(response_shock_oilsupply_rpoil))) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil)) +
   labs(x = "Months", y = "Oil production", title = "Oil-specific demand shock") +
   scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
@@ -627,7 +675,7 @@ plt_rpoil_rpoil <- ggplot(data = dat_irf_global_oil) +
   scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
 
 (plt_oilsupply_oilsupply | plt_aggdemand_oilsupply | plt_rpoil_oilsupply) / 
-  (plt_oilsupply_aggdemand | plt_aggdemand_aggdemand | plt_rpoil_oilsupply) / 
+  (plt_oilsupply_aggdemand | plt_aggdemand_aggdemand | plt_rpoil_aggdemand) / 
   (plt_oilsupply_rpoil | plt_aggdemand_rpoil | plt_rpoil_rpoil) &
     theme(plot.title = element_text(size = 10),
           axis.text.y = element_text(size = 10),

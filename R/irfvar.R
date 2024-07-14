@@ -5,15 +5,18 @@
 #' @param p A number that represents the number of lags.
 #' @param h A number that represents the horizon.
 #' @param var_order A string of variable names that specify the VAR ordering.
+#' @param var_cumsum A character vector indicating shock_response series to cumulate.
+#' @param negative_shocks A character vector indicating negative shocks.
 #' @param return_tidy A logical indicator for whether to return a tidy data set (TRUE) or a matrix (FALSE).
 #'
 #' @return A matrix of impulse responses
 #' @importFrom expm %^%
+#' @importFrom stringr str_detect
 #' @export
 #'
 #' @examples
 #' IRF <- irfvar(sol$Ahat, B0inv, p, h)
-irfvar <- function(Ahat, B0inv, p, h, var_order, return_tidy = TRUE) {
+irfvar <- function(Ahat, B0inv, p, h, var_order, var_cumsum = NULL, negative_shocks = NULL) {
   K <- nrow(B0inv)
 
   IK <- diag((p - 1) * K)
@@ -44,18 +47,37 @@ irfvar <- function(Ahat, B0inv, p, h, var_order, return_tidy = TRUE) {
     IRF <- cbind(IRF, matrix(t(iIRF), ncol = 1))
   }
 
-  rownames(IRF) <- get_irf_names(v_names = var_order)
+  response_shock_names <- get_irf_names(v_names = var_order)
+  rownames(IRF) <- response_shock_names
+
+  # Cumulate any responses
+  if (!is.null(var_cumsum)) {
+    for (v in var_cumsum) {
+      IRF[v, ] <- cumsum(IRF[v, ])
+    }
+  }
+
+  # Multiply negative shocks by -1
+  if (!is.null(negative_shocks)) {
+
+    negative_shocks_to_adjust <- vector(mode = "character")
+
+    for (ns in negative_shocks) {
+      ns_adj <- my_rownames[stringr::str_detect(response_shock_names, paste0("_", ns, "$"))]
+      negative_shocks_to_adjust <- c(negative_shocks_to_adjust, ns_adj)
+    }
+
+    for (ns in negative_shocks_to_adjust) {
+      IRF[ns, ] <- -IRF[ns, ]
+    }
+  }
 
   dat_IRF <- as_tibble(t(IRF))
   dat_IRF <- dat_IRF |>
     mutate(horizon = 0:h) |>
     select(horizon, everything())
 
-  if (return_tidy == TRUE) {
-    return(dat_IRF)
-  } else {
-    return(IRF)
-  }
+  return(list(irfm = IRF, irf_tidy = dat_IRF, Ahat = Ahat, p = p, h = h, var_order = var_order, var_cumsum = var_cumsum, negative_shocks = negative_shocks))
 }
 
 get_irf_names <- function(v_names) {

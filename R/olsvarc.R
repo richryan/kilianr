@@ -15,6 +15,9 @@
 #'    \code{Uhat} \tab Estimated least-squares residuals \cr
 #'    \tab \cr
 #'    \code{Z} \tab Constructed data matrix \cr
+#'    \code{Y} \tab Constructed data matrix \cr
+#'    \code{K} \tab Number of series in y \cr
+#'    \code{y} \tab The original dataset used as an argument \cr
 #' }
 #' @export
 #'
@@ -43,5 +46,5 @@ olsvarc <- function(y, p) {
   Vhat <- Ahat[, 1, drop = FALSE]
   Ahat <- Ahat[, 2:(KK * pp + 1)]
 
-  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z, Y=Y, p=pp))
+  return(list(Vhat=Vhat, Ahat=Ahat, SIGMAhat = SIGMAhat, Uhat=Uhat, Z=Z, Y=Y, p=pp, K = KK, y = y))
 }

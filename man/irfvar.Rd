@@ -4,7 +4,15 @@
 \alias{irfvar}
 \title{Compute structural impulse responses.}
 \usage{
-irfvar(Ahat, B0inv, p, h, var_order, return_tidy = TRUE)
+irfvar(
+  Ahat,
+  B0inv,
+  p,
+  h,
+  var_order,
+  negative_shocks = NULL,
+  return_tidy = TRUE
+)
 }
 \arguments{
 \item{Ahat}{A matrix of VAR parameters.}

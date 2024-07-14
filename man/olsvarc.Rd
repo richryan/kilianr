@@ -22,6 +22,7 @@ A list with components\tabular{ll}{
 \code{Uhat} \tab Estimated least-squares residuals \cr
 \tab \cr
 \code{Z} \tab Constructed data matrix \cr
+\code{Y} \tab Constructed data matrix \cr
 }
 }
 \description{
