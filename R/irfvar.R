@@ -80,6 +80,7 @@ irfvar <- function(Ahat, B0inv, p, h, var_order, var_cumsum = NULL, negative_sho
   return(list(irfm = IRF, irf_tidy = dat_IRF, Ahat = Ahat, p = p, h = h, var_order = var_order, var_cumsum = var_cumsum, negative_shocks = negative_shocks))
 }
 
+# Helper function
 get_irf_names <- function(v_names) {
   irf_names <- kronecker(v_names, v_names, FUN = paste, sep = "_")
   irf_names <- paste0("response_shock_", irf_names)
