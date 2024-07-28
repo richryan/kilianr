@@ -15,6 +15,7 @@
 #' @examples
 bootstrap_standard <- function(olsobj, irfobj, h, nrep,
                                method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
+                               nrep_inside_boot,
                                bootstrap_seed, display_progress_bar = TRUE) {
 
   # Check method is correct
@@ -31,6 +32,10 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
 
   if (missing(h)) {
     horizon <- irfobj$h
+  }
+
+  if (missing(nrep_inside_boot)) {
+    nrep_inside_boot = 500
   }
 
   # Rename variables for ease
@@ -59,6 +64,7 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
   # Equal-tailed percentile-t intervals
   if (method == "equal_percentile_t") {
     vIRFse <- bootstrap_standard_bootse(olsobj = olsobj, irfobj = irfobj, nrep = 500)
+    # matrix of bootstrapped ts
     mbootstrapt <- matrix(NA, nrow = nrep, ncol = (KK^2) * (horizon + 1))
   }
 
@@ -103,12 +109,12 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
     if (method == "equal_percentile_t") {
       rvIRFse <- bootstrap_standard_bootse(olsobj = olsobj,
                                            irfobj = irfobj,
-                                           nrep = 50)
+                                           nrep = nrep_inside_boot)
     }
     if (method == "symmetric_percentile_t") {
       rvIRFse <- bootstrap_standard_bootse(olsobj = olsobj,
                                            irfobj = irfobj,
-                                           nrep = 50)
+                                           nrep = nrep_inside_boot)
     }
 
     rB0inv <- t(chol(rsol$SIGMAhat))
