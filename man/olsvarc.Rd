@@ -23,6 +23,8 @@ A list with components\tabular{ll}{
 \tab \cr
 \code{Z} \tab Constructed data matrix \cr
 \code{Y} \tab Constructed data matrix \cr
+\code{K} \tab Number of series in y \cr
+\code{y} \tab The original dataset used as an argument \cr
 }
 }
 \description{

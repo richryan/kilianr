@@ -4,15 +4,7 @@
 \alias{irfvar}
 \title{Compute structural impulse responses.}
 \usage{
-irfvar(
-  Ahat,
-  B0inv,
-  p,
-  h,
-  var_order,
-  negative_shocks = NULL,
-  return_tidy = TRUE
-)
+irfvar(Ahat, B0inv, p, h, var_order, var_cumsum = NULL, negative_shocks = NULL)
 }
 \arguments{
 \item{Ahat}{A matrix of VAR parameters.}
@@ -24,6 +16,10 @@ irfvar(
 \item{h}{A number that represents the horizon.}
 
 \item{var_order}{A string of variable names that specify the VAR ordering.}
+
+\item{var_cumsum}{A character vector indicating shock_response series to cumulate.}
+
+\item{negative_shocks}{A character vector indicating negative shocks.}
 
 \item{return_tidy}{A logical indicator for whether to return a tidy data set (TRUE) or a matrix (FALSE).}
 }
