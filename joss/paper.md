@@ -14,7 +14,6 @@ affiliations:
  - name: California State University, Bakersfield, USA
 date: 14 July 2024
 bibliography: paper.bib
-
 ---
 
 # Summary
@@ -92,6 +91,8 @@ performing numerical orbit integration).
 
 
 # Statement of need
+
+
 
 `Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
 enables wrapping low-level languages (e.g., C) for speed without losing
