@@ -107,6 +107,7 @@ the change in oil production.)
 t_yview <- nrow(yview)
 q_yview <- ncol(yview)
 p_yview <- 2
+T_yview <- t_yview - p_yview
 ```
 
 There are 
@@ -125,11 +126,11 @@ Again for visualizing the data,
 the length of the blocks is chosen to be short:
 ```{r}
 blen <- 4
-nblocks <- ceiling((t_yview - p_yview) / len)
+nblocks <- ceiling((t_yview - p_yview) / blen)
 ```
 
 This means that there will be `ceiling((t_yview - p_yview) / len)` blocks,
-which amounts to `r blocks` in this case.
+which amounts to `r nblocks` in this case.
 And the strip of estimated innovations will have length `r nblocks * blen`,
 which is greater than `r t_yview`.
 
@@ -138,17 +139,54 @@ allocates space to hold the time series of bootstrap innovations,
 draws an initial block, and
 builds up the remaining bootstrap innovations.
 ```{r}
-rUtilde <- matrix(0, nrow = blen * nblocks, ncol = t_yview - p_yview)
+set.seed(676)
+rUtilde <- matrix(0, nrow = q_yview, ncol = nblocks * blen)
 
-upos <- ceiling(runif(1) * ((t_yview - p_yview) - len + 1))
-# rUtilde[, 1:len] <- Uhat[,upos:(upos + len - 1)]
-rUtilde <- Uhat[,upos:(upos + len - 1)]
-
-for (k in 1:ceiling((t_yview - p_yview) / len)) {
-  upos <- ceiling(runif(1) * ((t_yview - p_yview) - len + 1))
-  print(upos)
-  rUtilde <- cbind(rUtilde, Uhat[, upos:(upos + len - 1)])
+for (b in 0:(nblocks - 1)) {
+  # draw over integers 1,...,T - blen + 1
+  bupos <- ceiling(runif(1) * ((t_yview - p_yview) - blen + 1))
+  # indexes for allocating rUtilde
+  indlo <- b * blen + 1
+  indhi <- b * blen + blen
+  rUtilde[, indlo:indhi] <- Uhat[, bupos:(bupos + blen - 1)]
 }
+```
+
+The blocks are clearly visible:
+```{r}
+rUtilde[, 1:(blen + 1)]
+```
+and
+```{r}
+rUtilde[, (blen + 1):(blen + 1 + blen)]
+```
+```{r}
+rUtilde[, (nblocks * blen - blen):(nblocks * blen)]
+```
+
+So far the code has generated $\left[ \widehat{u}_1^*, \dots, \widehat{u}_T^* \right]$.
+The recentering scheme of @brueggemann_jentsch_trenkler_2016 
+must be implemented to ensure $E^* \left[ u_t^* \right] = 0$,
+where $E^*$ denotes expectation under the bootstrap probability measure.
+The recentering rule is
+$$
+\begin{align*}
+u_{j\ell + s}^* = \widehat{u}_{j\ell + s}^* - \frac{1}{T - \ell + 1} \sum_{r=0}^{T-\ell} \widehat{u}_{s+r},
+\end{align*}
+$$
+for $s = 1, 2,\dots,\ell$ and $j=0,1,\dots,\text{number of blocks} - 1$.
+
+```{r, include=FALSE}
+check_ind <- vector(mode = "integer", length = nblocks * blen)
+cnt <- 0
+for (s in 1:blen) {
+  for (j in 0:(nblocks - 1)) {
+    cnt <- cnt + 1
+    check_ind[cnt] <- j * blen + s
+    print(check_ind[cnt])
+  }
+}
+sort(check_ind)
 ```
 
 

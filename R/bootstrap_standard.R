@@ -94,6 +94,7 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
     # print(riid_index)
     rU[1:KK, 1:(tt - pp)] <- U[, riid_index]
 
+    # Equation (2.2.6) in Kilian and Lutkepohl (2017)
     for (i in 2:(tt - pp + 1)) {
       rY[1:(KK * pp), i] <- NU + A %*% rY[1:(KK * pp), i - 1, drop = FALSE] + rU[1:(KK * pp), i - 1, drop = FALSE]
       rydat[i - 1, 1:KK] <- rY[1:KK, i]
