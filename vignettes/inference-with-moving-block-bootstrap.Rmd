@@ -22,8 +22,7 @@ library(kilianr)
 To render the vignette:
 devtools::build_rmd("vignettes/my-vignette.Rmd")
 
-
-# Mechanics of wild bootstrap
+# Introduction
 
 The procedure is discussed by @kilian_lutkepohl_2017 on
 pages 355--356 in chapter 12, "Inference."
@@ -77,6 +76,10 @@ $$
 y_t^* = \widehat{\nu} + \widehat{A}_1 y_{t-1}^* + \cdots + \widehat{A}_p y_{t-p}^*.
 $$
 
+# Mechanics of moving block bootstrap in R
+
+The series of 
+
 ```{r}
 library(dplyr)
 # Create data to look through
@@ -117,5 +120,7 @@ for (k in 1:ceiling((t_yview - p_yview) / len)) {
   rUtilde <- cbind(rUtilde, Uhat[, upos:(upos + len - 1)])
 }
 ```
+
+# Application: global market for crude oil
 
 # References
