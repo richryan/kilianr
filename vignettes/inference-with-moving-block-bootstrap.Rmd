@@ -24,6 +24,10 @@ devtools::build_rmd("vignettes/my-vignette.Rmd")
 
 # Mechanics of wild bootstrap
 
+The mechanics of the moving block boostrap can be seen
+by looking at how the error matrix is constructed.
+The following code block shows how the blocks are drawn:
+
 ```{r}
 # Create data to look through
 yview <- kilianLutkepohlCh12Figure12_5 |> 
