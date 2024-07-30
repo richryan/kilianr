@@ -6,6 +6,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: references.bib  
+link-citations: TRUE
 ---
 
 ```{r, include = FALSE}
@@ -20,7 +21,7 @@ library(kilianr)
 ```
 
 To render the vignette:
-devtools::build_rmd("vignettes/my-vignette.Rmd")
+devtools::build_rmd("vignettes/inference-with-moving-block-bootstrap.Rmd")
 
 # Introduction
 
@@ -29,14 +30,6 @@ pages 355--356 in chapter 12, "Inference."
 
 The mechanics of the moving block boostrap can be seen
 by looking at how the error matrix is constructed.
-
-
-
-```{r}
-junk <- readLines("references.bib")
-writeLines(junk, "junk.bib")
-```
-
 
 The data are fit to the VAR($p$) model
 $$
@@ -78,8 +71,17 @@ $$
 
 # Mechanics of moving block bootstrap in R
 
-The series of 
+The series of bootstrap innovations $\left[ u_1^*, \dots, u_T^* \right]$ 
+can be constructed in R as follows. 
 
+The application considered below is the global market for oil [@kilian_2009].
+The VAR($p = 24$) model comprises data on 
+oil production, global real economic activity, and the real price of oil.
+Instead of using these data, though,
+the code chunk below 
+generates blocks of *dates* to show how the blocks of estimated innovations are constructed.
+
+The following code chunk generates the date strings:
 ```{r}
 library(dplyr)
 # Create data to look through
@@ -89,26 +91,54 @@ yview <- kilianLutkepohlCh12Figure12_5 |>
          agg_demand = paste0(date_prefix, "-", "aggdemand"),
          rpoil = paste0(date_prefix, "-", "rpoil")) |> 
   select(oil_supply, agg_demand, rpoil)
+head(yview)
+```
 
+```{r}
+tail(yview)
+```
 
+Instead of numeric data,
+data consist of a date and the associated series.
+(The data do not start in January 2023 because variable for oil supply measures
+the change in oil production.)
+
+```{r}
 t_yview <- nrow(yview)
-p_yview <- 3
-q_yview <- 3
+q_yview <- ncol(yview)
+p_yview <- 2
+```
 
-y <- t(yview)
-Y <- y[, p_yview:t_yview]
-for (i in 1:(p_yview - 1)) {
-  Y <- rbind(Y, y[, (p_yview - i):(t_yview - i)])
-}
-Y
+There are 
+`r q_yview` series and for each series
+`r t_yview` monthly observations.
+To visualize the data,
+the visual model will use a VAR model of order `r p_yview`.
 
-Uhat <- y
+The next chunk of code generates the strips.
+The code starts by transposing the matrix of observations:
+```{r}
+Uhat <- t(yview)
+Uhat[, 1:4]
+```
+Again for visualizing the data,
+the length of the blocks is chosen to be short:
+```{r}
+blen <- 4
+nblocks <- ceiling((t_yview - p_yview) / len)
+```
 
-rUtilde <- matrix(0, nrow = q_yview * p_yview, ncol = t_yview - p_yview)
-rY <- matrix(0, q_yview * p_yview, t_yview - p_yview + 1)
-len <- 4
-pos <- runif(1, min = 0, max = 1) * (t_yview - p_yview + 1) + 1
-rY[, 1] <- Y[, pos]
+This means that there will be `ceiling((t_yview - p_yview) / len)` blocks,
+which amounts to `r blocks` in this case.
+And the strip of estimated innovations will have length `r nblocks * blen`,
+which is greater than `r t_yview`.
+
+The next code block 
+allocates space to hold the time series of bootstrap innovations,
+draws an initial block, and
+builds up the remaining bootstrap innovations.
+```{r}
+rUtilde <- matrix(0, nrow = blen * nblocks, ncol = t_yview - p_yview)
 
 upos <- ceiling(runif(1) * ((t_yview - p_yview) - len + 1))
 # rUtilde[, 1:len] <- Uhat[,upos:(upos + len - 1)]
@@ -120,6 +150,8 @@ for (k in 1:ceiling((t_yview - p_yview) / len)) {
   rUtilde <- cbind(rUtilde, Uhat[, upos:(upos + len - 1)])
 }
 ```
+
+
 
 # Application: global market for crude oil
 
