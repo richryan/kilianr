@@ -103,7 +103,6 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
     # Concatenate the initial vector to rydat
     rY0_wide <- matrix(rY0, nrow = pp, ncol = KK, byrow = TRUE)
     rydat <- rbind(rY0_wide, rydat)
-    stopifnot(nrow(rydat) == tt)
 
     rsol <- olsvarc(y = rydat, p = pp)
 
@@ -263,7 +262,6 @@ bootstrap_standard_bootse <- function(olsobj, irfobj, nrep) {
     # Concatenate the initial vector to rydat
     rY0_wide <- matrix(rY0, nrow = pp, ncol = KK, byrow = TRUE)
     rydat <- rbind(rY0_wide, rydat)
-    stopifnot(nrow(rydat) == tt)
 
     rsol <- olsvarc(y = rydat, p = pp)
     rB0inv <- t(chol(rsol$SIGMAhat))
