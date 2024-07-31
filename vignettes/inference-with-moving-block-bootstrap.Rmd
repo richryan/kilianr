@@ -237,66 +237,6 @@ dat_irf_global_oil_mbb <- bootstrap_mbb(olsobj = sol_global_oil,
                                         display_progress_bar = TRUE)
 ```
 
-# Mechanics of building data recursively
-
-There are $K$ time series and $K$ refers to the dimension of the VAR process.
-The VAR process is of order $p$ and is referred to as a VAR($p$) model.
-
-The code uses the recursion
-$$
-Y_t = \boldsymbol{\nu} + \mathbf{A} Y_{t-1} + U_t,
-$$
-where  $Y_t = \left( y_t^{\prime}, \dots,y_{t-p+1}^{\prime}\right)^{\prime}$ and
-
-$$
-\boldsymbol{\nu} \equiv 
-\begin{bmatrix}
-\nu \\
-0 \\
-\vdots \\
-0
-\end{bmatrix}, \quad
-\mathbf{A} \equiv 
-\begin{bmatrix}
-A_1    & A_2 & \cdots & A_{p-1} & A_p \\
-I_K    & 0   & \cdots & 0       & 0   \\
-0      & I_K &        & 0       & 0   \\
-\vdots &     & \ddots & \vdots  & 0   \\
-0      & 0   & \cdots & I_K     & 0
-\end{bmatrix}, \text{ and }
-U_t \equiv 
-\begin{bmatrix}
-u_t \\
-0 \\
-\vdots \\
-0
-\end{bmatrix}
-$$
-
-In other words, the VAR($p$) process is written as a VAR($1$) process.
-
-The matrix $\mathbf{A}$ is referred to as the *companion matrix* of the VAR($p$) process.
-
-How is the process started off?
-In other words, 
-
-Recall the visual dataset:
-```{r}
-head(yview)
-```
-
-The least-squares procedure 
-```{r}
-X_yview <- t(as.matrix(yview))
-Y_yview <- X[, (p_yview + 1):t_yview]
-# Create Z matrix by row-binding a matrix below,
-# starting with vector of ones
-Z_yview <- matrix(1, nrow = 1, ncol = T_yview)
-for (i in 1:p_yview) {
-  Z_yview <- rbind(Z_yview, X_yview[, (p_yview + 1 - i):(t_yview - i)])
-}
-```
-
 
 
 # References

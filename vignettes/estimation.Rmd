@@ -1,10 +1,12 @@
 ---
-title: "estimation"
+title: "Least-squares estimation"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib  
+link-citations: TRUE
 ---
 
 ```{r, include = FALSE}
@@ -14,6 +16,266 @@ knitr::opts_chunk$set(
 )
 ```
 
+devtools::build_rmd("vignettes/estimation.Rmd")
+
 ```{r setup}
 library(kilianr)
 ```
+
+# Quick-start guide: using kilianr for least-squares estimation
+
+Here are some useful functions that can be used to analyze vector autoregressive models and
+structural vector autoregressive models (or
+structural VAR models).
+
+This vignette covers how to use code in kilianr to 
+*estimate a VAR model by unrestricted least squares*.
+
+Good background reading includes
+
+- Kilian, Lutz, and Helmut Lütkepohl. *Structural Vector Autoregressive Analysis*. Cambridge: Cambridge University Press, 2017.
+- Helmut Lütkepohl. *New Introduction to Multiple Time Series Analysis*. Berlin: Springer, 2005.
+
+The package closely follows the analysis in
+[*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06).
+In particular, 
+the some of the mechanics of estimating the VAR models is covered.
+The goal of the coverage is providing a entry for people looking to develop their own statistical models.
+
+## Least-squares estimation
+
+Interest is in $K$ time-series variables.
+For example, quarterly US data on
+the rate of price inflation,
+the unemployment rate, and
+the interest rate---in which case, $K=3$ [@stock_watson_2001].^[The system is analyzed by Stock and Watson. See: Stock, James, H., and Mark W. Watson. 2001. "Vector Autoregressions." Journal of Economic Perspectives, 15 (4): 101--115. DOI: 10.1257/jep.15.4.101.
+This reference offers another overview.]
+The time series can be represented as
+$$
+y_{t}=\left(y_{1t},\dots,y_{Kt}\right)^{\prime}.
+$$
+The data generating process is posited to follow a linear VAR process of order $p$,
+often written as VAR($p$).
+Which means the statistical model for $y_t$ can be written as 
+$$
+y_{t}=\nu+A_{1}y_{t-1}+\cdots+A_{p}y_{t-p}+u_{t},
+$$
+where 
+
+- the vector $\nu=\left(\nu_{1},\dots,\nu_{K}\right)^{\prime}$ is a $\left(K\times1\right)$ vector of intercept terms,
+- the $A_i$, $i=1,\dots,p$, are $K \times K$ parameter matricies, and
+- the vector $u_t = \left( u_{1t},\dots,u_{Kt} \right)^{\prime}$ is a $K$-dimensional zero-mean white-noise process; that is, $u_t$ is assumed to be iid white noise with nonsingular covariance matrix $\Sigma_u$, $u_t \overset{\text{iid}}{\sim} \left( 0, \Sigma_u \right)$.
+
+Under some common regularity assumptions discussed by Kilian and Lütkepohl,
+the model can be estimated by least squares efficiently.
+
+## Empirical demonstration of LS estimation
+
+The functions in kilianr can easily produce LS estimates.
+This example comes from section 2.3 of [*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06)
+by @kilian_lutkepohl_2017.
+
+The empirical demonstration uses quarterly US data on
+real GNP growth,
+the federal funds rate, and
+inflation measured using the GNP deflator.
+These data are included in `kilianLutkepohlCh02Macro`.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(kilianr)
+library(ggplot2)
+library(patchwork)
+
+plt_rgnp <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = drgnp)) +
+  labs(x = "", y = "", title= "Real GNP growth") +
+  scale_x_date(expand = c(0, 0))  
+
+plt_ffr <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = irate)) +
+  labs(x = "", y = "", title= "Federal funds rate") +
+  scale_x_date(expand = c(0, 0))  
+
+plt_infl <- ggplot(data = kilianLutkepohlCh02Macro) +
+  geom_line(mapping = aes(x = date, y = infl)) +
+  labs(x = "", y = "", title= "GNP deflator inflation") +
+  scale_x_date(expand = c(0, 0))  
+
+# Using notation from the patchwork package to combine figures
+plt_rgnp / plt_ffr / plt_infl
+```
+
+
+# Mechanics of least-squares estimation
+
+Here is some notation:
+
+There are $K$ time series and $K$ refers to the dimension of the VAR process.
+The VAR process is of order $p$ and is referred to as a VAR($p$) model.
+It is assumed
+that the econometrician is given a sample of size $T$,
+$y_1,\dots,y_T$, and
+$p$ presample vectors,
+$y_{-p+1},\dots,y_{0}$.
+
+## Matrix expressions
+
+The VAR($p$) model can be written
+$$
+y_t = \left[ \nu, A_1,\dots,A_p\right] Z_{t-1} + u_t,
+$$
+where $Z_{t-1} \equiv \left( 1, y_{t-1}^{\prime}, \dots, y_{t-p}^{\prime} \right)^{\prime}$; that is,
+$$
+Z_{t-1} \equiv 
+\begin{bmatrix}
+1\\
+y_{t-1}\\ 
+\vdots\\ 
+y_{t-p}
+\end{bmatrix}.
+$$
+The least-squares estimator is
+$$
+\widehat{A} \equiv \left[ \widehat{\nu}, \widehat{A}_{1},\dots, \widehat{A}_{p} \right] 
+= Y Z^{\prime} \left( Z Z^{\prime} \right)^{-1},
+$$
+where
+$$
+Y \equiv \left[ y_1,\dots,y_T \right] \text{ is } K \times T
+$$
+and
+$$
+Z \equiv \left[ Z_0, \dots, Z_{t-1} \right] \text{ is } \left( KP + 1 \right) \times T.
+$$
+Data can be built recursively (useful for bootstrapping)
+using
+$$
+\Upsilon_t = \boldsymbol{\nu} + \mathbf{A} \Upsilon_{t-1} + U_t,
+$$
+where  $\Upsilon_t = \left( y_t^{\prime}, \dots,y_{t-p+1}^{\prime}\right)^{\prime}$ and
+
+$$
+\boldsymbol{\nu} \equiv 
+\begin{bmatrix}
+\nu \\
+0 \\
+\vdots \\
+0
+\end{bmatrix}, \quad
+\mathbf{A} \equiv 
+\begin{bmatrix}
+A_1    & A_2 & \cdots & A_{p-1} & A_p \\
+I_K    & 0   & \cdots & 0       & 0   \\
+0      & I_K &        & 0       & 0   \\
+\vdots &     & \ddots & \vdots  & 0   \\
+0      & 0   & \cdots & I_K     & 0
+\end{bmatrix}, \text{ and }
+U_t \equiv 
+\begin{bmatrix}
+u_t \\
+0 \\
+\vdots \\
+0
+\end{bmatrix}
+$$
+
+In other words, the VAR($p$) process is written as a VAR($1$) process.
+
+The matrix $\mathbf{A}$ is referred to as the *companion matrix* of the VAR($p$) process.
+
+## Mechanics of building data recursively
+
+How can R code generate these objects?
+A partial answer comes from viewing the data.
+This requires creating a viewable dataset.
+
+The application for the viewable dataset is the global market for oil [@kilian_2009].
+The VAR($p$) model comprises data on 
+oil production, global real economic activity, and the real price of oil.
+Instead of using the numeric values of these data, though,
+the code chunk below 
+generates blocks of *dates* to show how matrix objects are constructed.
+
+```{r}
+library(dplyr)
+# Create data to look through
+date_min <- min(kilianLutkepohlCh12Figure12_5$date)
+date_max <- max(kilianLutkepohlCh12Figure12_5$date)
+yview <- kilianLutkepohlCh12Figure12_5 |> 
+  mutate(date_prefix = paste0(lubridate::year(date), "-", format(date, "%m")),
+         oil_supply = paste0(date_prefix, "-", "oilsupply"),
+         agg_demand = paste0(date_prefix, "-", "aggdemand"),
+         rpoil = paste0(date_prefix, "-", "rpoil")) |> 
+  select(oil_supply, agg_demand, rpoil)
+head(yview)
+```
+
+Here are parameters associated with the data:
+```{r}
+t_yview <- nrow(yview)
+K_yview <- ncol(yview)
+p_yview <- 2
+T_yview <- t_yview - p_yview
+```
+
+There are `r K_yview` time series observed for `r t_yview` months.
+The series start in `r date_min` and go through `r date_max`.
+The sample size is `r T_yview` and there are $p$ presample vectors.
+For the purposes of viewing, $p$ is chosen to be `r p_yview`.
+The time-$y_{-p+1}$ beginning and time-$y_0$ edge of the presample is
+```{r}
+X_yview <- t(as.matrix(yview))
+X_yview[, 1:(p_yview + 1)]
+```
+(The last column is in the sample.)
+
+The least-squares procedure requires the construction of $Y$ and $Z$.
+```{r}
+Y_yview <- X[, (p_yview + 1):t_yview]
+# Create Z matrix by row-binding a matrix below,
+# starting with vector of ones
+Z_yview <- matrix(1, nrow = 1, ncol = T_yview)
+for (i in 1:p_yview) {
+  Z_yview <- rbind(Z_yview, X_yview[, (p_yview + 1 - i):(t_yview - i)])
+}
+```
+
+The matrix $Z$ consists of the data
+```{r}
+Z_yview[, 1:(p_yview + 1)]
+```
+and
+```{r}
+Z_yview[, (T_yview - 2):T_yview]
+```
+These matricies $Y$ and $Z$ can be used to construct an estimate for $A$.
+
+Moving beyond estimation to inference,
+how can a bootstrap sample be constructed?
+The data can be built up using $\Upsilon_t = \boldsymbol{\nu} + \mathbf{A} \Upsilon_{t-1} + U_t$.
+
+Given $u_t$,
+$\Upsilon_t$ can be constructed given $p$ pre-sample vectors, $y_{t-1},\dots,y_{t-p}$.
+Often the presample is taken at random across all possible presamples.
+How many possible presamples are there?
+There are the ones in $Z$ plus one additional vector
+(the last vector that would be generated in the recursion, $\Upsilon_T$,
+which can be used as a  presample in a bootstrap).
+
+The vector of possible presamples is 
+```{r}
+# Account for first row of ones
+YY <- Z_yview[2:(K_yview * p_yview + 1), 1:(t_yview - p_yview), drop = FALSE]
+```
+plus the 
+```{r}
+YYt <- rbind(Y_yview[, T_yview, drop = FALSE], YY[, t_yview - p_yview, drop = FALSE])
+YYt
+```
+except that only the first $K p$ are kept.
+```{r}
+YY <- cbind(YY, Ytt[1:(K_yview * p_yview), , drop = FALSE])
+```
+
