@@ -63,7 +63,8 @@ irfvar <- function(Ahat, B0inv, p, h, var_order, var_cumsum = NULL, negative_sho
     negative_shocks_to_adjust <- vector(mode = "character")
 
     for (ns in negative_shocks) {
-      ns_adj <- my_rownames[stringr::str_detect(response_shock_names, paste0("_", ns, "$"))]
+      ns_check_end <- paste0("_", ns, "$")
+      ns_adj <- response_shock_names[stringr::str_detect(response_shock_names, ns_check_end)]
       negative_shocks_to_adjust <- c(negative_shocks_to_adjust, ns_adj)
     }
 
