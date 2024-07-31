@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 devtools::build_rmd("vignettes/estimation.Rmd")
@@ -102,7 +103,10 @@ plt_infl <- ggplot(data = kilianLutkepohlCh02Macro) +
   geom_line(mapping = aes(x = date, y = infl)) +
   labs(x = "", y = "", title= "GNP deflator inflation") +
   scale_x_date(expand = c(0, 0))  
+```
 
+Here's the plot
+```{r, out.width="80%", fig.width=10, fig.height=8}
 # Using notation from the patchwork package to combine figures
 plt_rgnp / plt_ffr / plt_infl
 ```
@@ -233,7 +237,7 @@ X_yview[, 1:(p_yview + 1)]
 
 The least-squares procedure requires the construction of $Y$ and $Z$.
 ```{r}
-Y_yview <- X[, (p_yview + 1):t_yview]
+Y_yview <- X_yview[, (p_yview + 1):t_yview]
 # Create Z matrix by row-binding a matrix below,
 # starting with vector of ones
 Z_yview <- matrix(1, nrow = 1, ncol = T_yview)
@@ -276,6 +280,9 @@ YYt
 ```
 except that only the first $K p$ are kept.
 ```{r}
-YY <- cbind(YY, Ytt[1:(K_yview * p_yview), , drop = FALSE])
+YY <- cbind(YY, YYt[1:(K_yview * p_yview), , drop = FALSE])
 ```
 
+These matricies can be used to build up a dataset.
+
+# References
