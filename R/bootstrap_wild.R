@@ -63,7 +63,7 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
 
   # Equal-tailed percentile-t intervals
   if (method == "equal_percentile_t") {
-    vIRFse <- bootstrap_standard_bootse(olsobj = olsobj, irfobj = irfobj, nrep = 500)
+    vIRFse <- bootstrap_wild_bootse(olsobj = olsobj, irfobj = irfobj, nrep = 500)
     # matrix of bootstrapped ts
     mbootstrapt <- matrix(NA, nrow = nrep, ncol = (KK^2) * (horizon + 1))
   }
@@ -103,17 +103,16 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
     # Concatenate the initial vector to rydat
     rY0_wide <- matrix(rY0, nrow = pp, ncol = KK, byrow = TRUE)
     rydat <- rbind(rY0_wide, rydat)
-    stopifnot(nrow(rydat) == tt)
 
     rsol <- olsvarc(y = rydat, p = pp)
 
     if (method == "equal_percentile_t") {
-      rvIRFse <- bootstrap_standard_bootse(olsobj = olsobj,
+      rvIRFse <- bootstrap_wild_bootse(olsobj = olsobj,
                                            irfobj = irfobj,
                                            nrep = nrep_inside_boot)
     }
     if (method == "symmetric_percentile_t") {
-      rvIRFse <- bootstrap_standard_bootse(olsobj = olsobj,
+      rvIRFse <- bootstrap_wild_bootse(olsobj = olsobj,
                                            irfobj = irfobj,
                                            nrep = nrep_inside_boot)
     }
@@ -209,7 +208,7 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
   return(dat_CI)
 }
 
-bootstrap_standard_bootse <- function(olsobj, irfobj, nrep) {
+bootstrap_wild_bootse <- function(olsobj, irfobj, nrep) {
 
   if (missing(nrep)) {
     nrep <- 500
@@ -250,10 +249,11 @@ bootstrap_standard_bootse <- function(olsobj, irfobj, nrep) {
     rY0 <- Y[, rpos_y0, drop = FALSE]
     rY[1:(KK * pp), 1] <- rY0
 
-    # iid resampling
-    riid_index <- floor(runif(tt - pp, min = 0, max = 1) * (tt - pp)) + 1
-    # print(riid_index)
-    rU[1:KK, 1:(tt - pp)] <- U[, riid_index]
+    # No iid resampling
+    # Recursive design wild bootstrap
+    reta1 <- matrix(rnorm(tt - pp, mean = 0, sd = 1), nrow = 1)
+    reta <- rbind(reta1, reta1, reta1)
+    rU[1:KK, 1:(tt - pp)] <- U[1:KK, 1:(tt - pp)] * reta
 
     for (i in 2:(tt - pp + 1)) {
       rY[1:(KK * pp), i] <- NU + A %*% rY[1:(KK * pp), i - 1, drop = FALSE] + rU[1:(KK * pp), i - 1, drop = FALSE]
@@ -263,7 +263,6 @@ bootstrap_standard_bootse <- function(olsobj, irfobj, nrep) {
     # Concatenate the initial vector to rydat
     rY0_wide <- matrix(rY0, nrow = pp, ncol = KK, byrow = TRUE)
     rydat <- rbind(rY0_wide, rydat)
-    stopifnot(nrow(rydat) == tt)
 
     rsol <- olsvarc(y = rydat, p = pp)
     rB0inv <- t(chol(rsol$SIGMAhat))
