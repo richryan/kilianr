@@ -5,6 +5,8 @@ vignette: >
   %\VignetteIndexEntry{Structural VAR Models Using Recursive Identification}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib  
+link-citations: TRUE
 ---
 
 ```{r, include = FALSE}
@@ -39,11 +41,8 @@ Good background reading includes
 - Helmut Lütkepohl. *New Introduction to Multiple Time Series Analysis*. Berlin: Springer, 2005.
 
 
-In fact,
-you could think about this package as an extended advertisement for those resources.
-And purchasing a copy of 
-[*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06)
-is recommended.
+The package closely follows the analysis in
+[*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06).
 
 ## Least-squares estimation
 
@@ -51,7 +50,7 @@ Interest is in $K$ time-series variables.
 For example, quarterly US data on
 the rate of price inflation,
 the unemployment rate, and
-the interest rate---in which case, $K=3$.^[Which is the system analyzed by Stock and Watson. See: Stock, James, H., and Mark W. Watson. 2001. "Vector Autoregressions." Journal of Economic Perspectives, 15 (4): 101--115. DOI: 10.1257/jep.15.4.101.]
+the interest rate---in which case, $K=3$ [@stock_watson_2001].^[The system is analyzed by Stock and Watson. See: Stock, James, H., and Mark W. Watson. 2001. "Vector Autoregressions." Journal of Economic Perspectives, 15 (4): 101--115. DOI: 10.1257/jep.15.4.101.]
 The time series can be represented as
 $$
 y_{t}=\left(y_{1t},\dots,y_{Kt}\right)^{\prime}.
@@ -232,7 +231,7 @@ ggplot(data = dat_plt_macro_oil) +
   facet_wrap(vars(series), scales = "free")
 ```
 
-This is visually close to figure 9.1.
+This is visually close to figure 9.1 in @kilian_lutkepohl_2017.
 A better reproduction requires tuning each figure separately,
 which is undertaken in the code chunk below.
 
@@ -272,13 +271,11 @@ To do inference
 ### Data
 
 ```{r}
-# library(lubridate)
-
 p <- 24
 
 dat_global_oil_plt <- kilianLutkepohlCh12Figure12_5 |> 
-  mutate(junk = row_number()) |> 
-  filter(date > min(date) + months(p - 1))
+  filter(date > min(date) + lubridate::dmonths(p - 1))
+  # filter(date > min(date) + base::months(p - 1))
 
 plt_oil_production <- ggplot(data = dat_global_oil_plt) +
   geom_line(mapping = aes(x = date, y = oil_supply)) +
@@ -300,7 +297,7 @@ plt_rpoil <- ggplot(data = dat_global_oil_plt) +
 
 plt_oil_production / plt_agg_demand / plt_rpoil
 ```
-This figure is comparable to figure 12.4 of *Structural Vector Autoregressive Analysis*.
+The figure is comparable to figure 12.4 in @kilian_lutkepohl_2017.
 
 ### Estimation
 
@@ -1019,4 +1016,5 @@ dat_CI <- dat_CIlo |>
 # CIhi <- IRF + 2 * mIRFstd
 ```
 
+# References
 

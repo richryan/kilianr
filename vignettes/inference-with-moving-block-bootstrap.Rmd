@@ -145,9 +145,11 @@ rUtilde <- matrix(0, nrow = q_yview, ncol = nblocks * blen)
 for (b in 0:(nblocks - 1)) {
   # draw over integers 1,...,T - blen + 1
   bupos <- ceiling(runif(1) * ((t_yview - p_yview) - blen + 1))
+  print(bupos)
   # indexes for allocating rUtilde
   indlo <- b * blen + 1
   indhi <- b * blen + blen
+  print(paste("index: ", indlo, indhi))
   rUtilde[, indlo:indhi] <- Uhat[, bupos:(bupos + blen - 1)]
 }
 ```
@@ -190,7 +192,52 @@ sort(check_ind)
 ```
 
 
-
 # Application: global market for crude oil
+
+```{r}
+y_global_oil <- kilianLutkepohlCh12Figure12_5 |> 
+  # mutate(check_oil_supply = detrendcl(oil_supply, tt = "constant")) |>   
+  mutate(across(c(oil_supply, agg_demand, rpoil), \(x) detrendcl(x, tt = "constant"))) |> 
+  rename(oilsupply = oil_supply,
+         aggdemand = agg_demand) |> 
+  select(-date) |> 
+  as.matrix()
+
+horizon <- 15
+
+sol_global_oil <- olsvarc(y_global_oil, p = 24)
+var_order_global_oil <- c("oilsupply", "aggdemand", "rpoil")
+var_cumsum_global_oil <- c("response_shock_oilsupply_oilsupply", 
+                           "response_shock_oilsupply_aggdemand",
+                           "response_shock_oilsupply_rpoil")
+negative_shocks_global_oil <- c("oilsupply")
+
+# response_shock_names <- get_irf_names(v_names = var_order_global_oil)
+# 
+# negative_shocks_to_adjust <- vector(mode = "character")
+# 
+# stringr::str_detect(response_shock_names, paste0("_", negative_shocks_global_oil[1], "$"))
+# 
+# for (ns in negative_shocks_global_oil) {
+#       ns_adj <- response_shock_names[stringr::str_detect(response_shock_names, paste0("_", ns, "$"))]
+#       negative_shocks_to_adjust <- c(negative_shocks_to_adjust, ns_adj)
+#       }
+
+irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat, 
+                        B0inv = t(chol(sol_global_oil$SIGMAhat)),
+                        p = sol_global_oil$p, h = horizon, 
+                        negative_shocks = negative_shocks_global_oil,
+                        var_cumsum = var_cumsum_global_oil,
+                        var_order = var_order_global_oil)
+
+nrep <- 250
+dat_irf_global_oil_mbb <- bootstrap_mbb(olsobj = sol_global_oil, 
+                                        irfobj = irf_global_oil, 
+                                        nrep = nrep, 
+                                        blen = 36,
+                                        bootstrap_seed = 676, 
+                                        display_progress_bar = TRUE)
+```
+
 
 # References
