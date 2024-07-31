@@ -111,6 +111,40 @@ Here's the plot
 plt_rgnp / plt_ffr / plt_infl
 ```
 
+The VAR($4$) model for $y_t = \left( \Delta \text{GNP}_t, \text{interest rate}_t, \Delta \text{price}_t \right)$ can be estimated by LS using the code show below.
+The function `olsvarc` includes a constant.
+```{r}
+y <- kilianLutkepohlCh02Macro |> select(drgnp, irate, infl)
+sol <- olsvarc(y, p = 4)
+```
+
+The code can be checked against the estimates shown on pages 33--34 of @kilian_lutkepohl_2017.
+The following block of code prints out the LS estimates.
+Here are the LS estimates, $\hat{\nu}$:
+```{r}
+print(round(sol$Vhat, 4))
+```
+
+And the LS estimates, $\hat{A}_1, \dots, \hat{A}_4$:
+```{r}
+KK <- 3
+pp <- 4
+for (i in 1:pp) {
+  # The A_i hats have indices 1--K, (K+1)--2K, (2K+1)--3K, ...
+  # 1-3, 4-6, 7-9
+  print(paste0("A_", i, ": "))
+  print(round(sol$Ahat[, ((i - 1) * KK + 1):(i * KK)], 4))
+}
+```
+
+A consistent estimator of $\Sigma_u$ under the above assumptions, $\widehat{\Sigma}_u$,
+is expressed in equation (2.3.4), page 31, of @kilian_lutkepohl_2017.
+The estimate is
+```{r}
+print(round(sol$SIGMAhat, 4))
+```
+
+These values agree with those found on page 34 for this example.
 
 # Mechanics of least-squares estimation
 
