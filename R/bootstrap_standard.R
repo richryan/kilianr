@@ -71,7 +71,7 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
   # Develop progress bar as needed
   if (display_progress_bar == TRUE) {
     cli::cli_progress_bar("Bootstrap reps", tot = nrep)
-    }
+  }
 
   # Loop for boostrap replications
   for (r in 1:nrep) {
