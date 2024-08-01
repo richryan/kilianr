@@ -97,15 +97,6 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
     rY0 <- YY[, rpos_y0, drop = FALSE]
     rY[1:(KK * pp), 1] <- rY0
 
-    # ==== TO DELETE ===
-
-    # # Initial condition
-    # rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
-    # rY0 <- Y[, rpos_y0, drop = FALSE]
-    # rY[1:(KK * pp), 1] <- rY0
-
-    # ==== END TO DELETE ===
-
     # No iid resampling
     # Recursive design wild bootstrap
     reta1 <- matrix(rnorm(tt - pp, mean = 0, sd = 1), nrow = 1)
