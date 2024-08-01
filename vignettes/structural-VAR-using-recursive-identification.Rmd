@@ -93,7 +93,7 @@ The structural representation offers a causal interpretation of the correlations
 
 Recursive identificaiton is one of the most straightforward ways to identify a VAR model.
 This method decomposes $\widehat{\Sigma}_u$ using the Cholesky decomposition.
-Kilian and Lütkepohl discuss this approach in chapter 9 of [*Structural Vector Autoregressive Analysis*](https://www.cambridge.org/core/books/structural-vector-autoregressive-analysis/DAF4217439EA585D10902D58A8849E06).
+Kilian and Lütkepohl discuss this approach in chapter 9 of @kilian_lutkepohl_2017.
 This example comes from that chapter discussed around figure 9.1,
 which is found on page 244.
 
@@ -101,6 +101,7 @@ To confirm the reduced-form parameter estimates,
 the following code shows LS estimates 
 
 ```{r}
+library(dplyr)
 var_order_macro_oil <- c("drpoil", "infl", "drgdp")
 y_macro_oil <- kilianLutkepohlCh09Figure9_1 |> select(all_of(var_order_macro_oil))
 sol_macro_oil <- olsvarc(y_macro_oil, p = 4)
@@ -146,6 +147,11 @@ The next chunk of code plots the responses of the US economy to an unexpected in
 These estimates agree with those presented in figure 9.1.
 
 ```{r}
+library(dplyr)
+library(tidyr) # for reshaping the data
+library(ggplot2)
+library(patchwork) # for combining plots
+
 dat_plt_macro_oil <- dat_irf_macro_oil |> 
   select(horizon, ends_with("_drpoil")) |> 
   pivot_longer(starts_with("response_shock_"), names_to = "series", values_to = "response") |> 
@@ -193,16 +199,32 @@ plt_macro_oil_drpoil | plt_macro_oil_infl | plt_macro_oil_drgdp
 So far the codes have been used to 
 estimate a VAR($p$) model and
 estimate impulse responses from a structural model identified recursively.
-To do inference
+Inference requires estimating uncertainty.
+
+The package includes several methods for constructing confidence intervals.
+
+Methods for constructing confidence intervals are demonstrated using
+a recursively identified monthly structural VAR model of the
+global market for crude oil [@kilian_2009].
+The example is discussed by @kilian_lutkepohl_2017 in chapter 12.
 
 ### Data
+
+The statistical model comprises 
+data on the 
+
+- percent change in world crude-oil production
+- an index of real economic activity, and
+- the log of the real price of oil.
+
+Here are what the data look like,
+excluding the presample:
 
 ```{r}
 p <- 24
 
 dat_global_oil_plt <- kilianLutkepohlCh12Figure12_5 |> 
   filter(date > min(date) + lubridate::dmonths(p - 1))
-  # filter(date > min(date) + base::months(p - 1))
 
 plt_oil_production <- ggplot(data = dat_global_oil_plt) +
   geom_line(mapping = aes(x = date, y = oil_supply)) +
@@ -252,15 +274,15 @@ irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
                         negative_shocks = negative_shocks_global_oil,
                         var_cumsum = var_cumsum_global_oil,
                         var_order = var_order_global_oil)
+# Keep the tidy version of responses
 dat_irf_global_oil <- irf_global_oil$irf_tidy
-
-ggplot(data = dat_irf_global_oil) +
-  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply))
 ```
 
 ### Inference
 
 The code base makes computation of the confidence sets straightforward.
+The following code block computes confidence intervals
+using a standard boostrap.
 ```{r}
 nrep <- 2000
 dat_irf_global_oil_ci <- bootstrap_standard(olsobj = sol_global_oil, 

@@ -353,6 +353,17 @@ plt_rpoil_rpoil <- ggplot(data = dat_irf_global_oil) +
           axis.text.y = element_text(size = 10),
           axis.text.x = element_text(size = 10))
 ```
-
+Here are responses of the real price of oil, zoomed in:
+```{r}
+(plt_rpoil_oilsupply | plt_rpoil_aggdemand | plt_rpoil_rpoil) &
+    theme(plot.title = element_text(size = 10),
+          axis.text.y = element_text(size = 10),
+          axis.text.x = element_text(size = 10))
+```
+Confidence intervals computed using the moving-block bootstrap are wider than
+the iid bootstrap.
+The residual-based moving-block bootstrap guards against conditional heteroskedasticity.
+Nevertheless,
+the results are similar. 
 
 # References
