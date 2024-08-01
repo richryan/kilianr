@@ -193,6 +193,7 @@ sort(check_ind)
 # Application: global market for crude oil
 
 ```{r}
+library(dplyr)
 y_global_oil <- kilianLutkepohlCh12Figure12_5 |> 
   # mutate(check_oil_supply = detrendcl(oil_supply, tt = "constant")) |>   
   mutate(across(c(oil_supply, agg_demand, rpoil), \(x) detrendcl(x, tt = "constant"))) |> 
@@ -210,17 +211,6 @@ var_cumsum_global_oil <- c("response_shock_oilsupply_oilsupply",
                            "response_shock_oilsupply_rpoil")
 negative_shocks_global_oil <- c("oilsupply")
 
-# response_shock_names <- get_irf_names(v_names = var_order_global_oil)
-# 
-# negative_shocks_to_adjust <- vector(mode = "character")
-# 
-# stringr::str_detect(response_shock_names, paste0("_", negative_shocks_global_oil[1], "$"))
-# 
-# for (ns in negative_shocks_global_oil) {
-#       ns_adj <- response_shock_names[stringr::str_detect(response_shock_names, paste0("_", ns, "$"))]
-#       negative_shocks_to_adjust <- c(negative_shocks_to_adjust, ns_adj)
-#       }
-
 irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat, 
                         B0inv = t(chol(sol_global_oil$SIGMAhat)),
                         p = sol_global_oil$p, h = horizon, 
@@ -228,7 +218,9 @@ irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
                         var_cumsum = var_cumsum_global_oil,
                         var_order = var_order_global_oil)
 
-nrep <- 250
+dat_irf_global_oil <- irf_global_oil$irf_tidy
+
+nrep <- 2000
 dat_irf_global_oil_mbb <- bootstrap_mbb(olsobj = sol_global_oil, 
                                         irfobj = irf_global_oil, 
                                         nrep = nrep, 
@@ -237,6 +229,130 @@ dat_irf_global_oil_mbb <- bootstrap_mbb(olsobj = sol_global_oil,
                                         display_progress_bar = TRUE)
 ```
 
+For comparison,
+confidence intervals computed using the wild bootstrap:
+```{r}
+dat_irf_global_oil_wild <- bootstrap_wild(olsobj = sol_global_oil, 
+                                            irfobj = irf_global_oil, 
+                                            nrep = nrep, 
+                                            h = horizon, 
+                                            bootstrap_seed = 676, 
+                                          display_progress_bar = TRUE)
+```
+
+
+The plot of the impulse response functions is
+```{r}
+library(ggplot2)
+library(patchwork)
+# Negative oil-supply shock
+plt_oilsupply_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply), color = "red") + 
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_hi), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_oilsupply_hi), color = "green", linetype = "dotted") +  
+  labs(x = "", y = "Oil production", title = "Oil supply shock")  +
+  scale_y_continuous(breaks = c(-2, -1, 0), limits = c(-2, 0.5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_aggdemand_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_hi), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_oilsupply_hi), color = "green", linetype = "dotted") +  
+  labs(x = "", y = "Real activity", title = "Oil supply shock") +
+  scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_rpoil_oilsupply <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply_hi), color = "blue", linetype = "dotted") +  
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_oilsupply_hi), color = "green", linetype = "dotted") +    
+  labs(x = "", y = "Real price of oil", title = "Oil supply shock") +
+  scale_y_continuous(breaks = c(-0.05, 0, 0.05), limits = c(-0.075, 0.075)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+# Aggregate-demand shock
+plt_oilsupply_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand_hi), color = "blue", linetype = "dotted") +    
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_aggdemand_hi), color = "green", linetype = "dotted") + 
+  labs(x = "", y = "Oil production", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_aggdemand_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand_hi), color = "blue", linetype = "dotted") +      geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_aggdemand_hi), color = "green", linetype = "dotted") + 
+  labs(x = "", y = "Real activity", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = seq(-2, 8, by = 2), limits = c(-2, 8)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_rpoil_aggdemand <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand_hi), color = "blue", linetype = "dotted") +        
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_aggdemand_hi), color = "green", linetype = "dotted") +  
+  labs(x = "", y = "Real price of oil", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = c(-0.05, 0, 0.05), limits = c(-0.05, 0.1)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+# Oil-specific demand shock
+plt_oilsupply_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil_hi), color = "blue", linetype = "dotted") +        
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_oilsupply_rpoil_hi), color = "green", linetype = "dotted") +      
+  labs(x = "Months", y = "Oil production", title = "Oil-specific demand shock") +
+  scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.5, 1.0)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_aggdemand_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil_hi), color = "blue", linetype = "dotted") +   
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_aggdemand_rpoil_hi), color = "green", linetype = "dotted") +     
+  labs(x = "Months", y = "Real activity", title = "Oil-specific demand shock") +
+  scale_y_continuous(breaks = c(-5, 0, 5), limits = c(-5, 5)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+plt_rpoil_rpoil <- ggplot(data = dat_irf_global_oil) +
+  geom_hline(yintercept = 0.0) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_rpoil_rpoil), color = "red") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_rpoil_lo), color = "blue", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_mbb, mapping = aes(x = horizon, y = response_shock_rpoil_rpoil_hi), color = "blue", linetype = "dotted") +            
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_rpoil_lo), color = "green", linetype = "dotted") +
+  geom_line(data = dat_irf_global_oil_wild, mapping = aes(x = horizon, y = response_shock_rpoil_rpoil_hi), color = "green", linetype = "dotted") +          
+  labs(x = "Months", y = "Real price of oil", title = "Aggregate demand shock") +
+  scale_y_continuous(breaks = seq(0, 0.15, by = 0.05), limits = c(0.0, 0.15)) +
+  scale_x_continuous(breaks = seq(0, 15, by = 5), expand = c(0, 0))
+
+(plt_oilsupply_oilsupply | plt_aggdemand_oilsupply | plt_rpoil_oilsupply) / 
+  (plt_oilsupply_aggdemand | plt_aggdemand_aggdemand | plt_rpoil_aggdemand) / 
+  (plt_oilsupply_rpoil | plt_aggdemand_rpoil | plt_rpoil_rpoil) &
+    theme(plot.title = element_text(size = 10),
+          axis.text.y = element_text(size = 10),
+          axis.text.x = element_text(size = 10))
+```
 
 
 # References

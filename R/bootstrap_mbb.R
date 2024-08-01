@@ -24,6 +24,7 @@ bootstrap_mbb <- function(olsobj, irfobj, h, nrep,
   tt <- nrow(y)
   pp <- olsobj$p
   KK <- olsobj$K
+  TT <- tt - pp
 
   # Block length
   nblocks <- ceiling((tt - pp) / blen)
@@ -68,8 +69,8 @@ bootstrap_mbb <- function(olsobj, irfobj, h, nrep,
     for (b in 0:(nblocks - 1)) {
       # draw over integers 1,...,T - blen + 1
       bupos <- ceiling(runif(1) * ((tt - pp) - blen + 1))
-      print("b start")
-      print(bupos)
+      # print("b start")
+      # print(bupos)
       # indexes for allocating rUtilde
       indlo <- b * blen + 1
       indhi <- b * blen + blen
@@ -77,25 +78,44 @@ bootstrap_mbb <- function(olsobj, irfobj, h, nrep,
     }
 
     # Re-center
-    print("start recenter")
+    # print("start recenter")
     for (ss in 1:blen) {
       for (jj in 0:(nblocks - 1)) {
         rU[1:KK, jj * blen + ss] <- rUtilde[1:KK, jj * blen + ss] - matrix(rowMeans(U[, ss:(ss + tt - pp - blen)]), ncol = 1)
       }
     }
 
-    print(rUtilde)
-    print(rU)
+    # Keep only T
+    rU <- rU[1:KK, 1:TT]
+    # Add zeros to use equation (2.2.6) of Kilian and Lutkepohl (2017)
+    rU <- rbind(rU, matrix(0, nrow = KK * pp - KK, ncol = TT))
 
-    # Initial condition
+    # print(rUtilde)
+    # print(rU)
+    # print("Dimension of rU")
+    # print(dim(rU))
+    # print("I'm here")
+
+    # Initial condition for recursively building sample
+    # used to pick off vector of YY
     rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
-    rY0 <- Y[, rpos_y0, drop = FALSE]
+    # Z matrix from OLS
+    YY <- olsobj$Z[2:(KK * pp + 1), 1:(tt - pp), drop = FALSE]
+    # y_T
+    YYt <- rbind(olsobj$Y[, TT, drop = FALSE], YY[, TT, drop = FALSE])
+    YY <- cbind(YY, YYt[1:(KK * pp), , drop = FALSE])
+
+    rY0 <- YY[, rpos_y0, drop = FALSE]
     rY[1:(KK * pp), 1] <- rY0
 
-    # Moving block boostrap
-    riid_index <- floor(runif(tt - pp, min = 0, max = 1) * (tt - pp)) + 1
-    # print(riid_index)
-    rU[1:KK, 1:(tt - pp)] <- U[, riid_index]
+    # == OLD TO DELETE ===
+
+    # Initial condition
+    # rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
+    # rY0 <- Y[, rpos_y0, drop = FALSE]
+    # rY[1:(KK * pp), 1] <- rY0
+
+    # == END OLD TO DELETE ===
 
     # Equation (2.2.6) in Kilian and Lutkepohl (2017)
     for (i in 2:(tt - pp + 1)) {
