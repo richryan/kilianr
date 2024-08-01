@@ -87,7 +87,7 @@ library(dplyr)
 library(tidyr)
 library(kilianr)
 library(ggplot2)
-library(patchwork)
+library(patchwork) # for combining plots
 
 plt_rgnp <- ggplot(data = kilianLutkepohlCh02Macro) +
   geom_line(mapping = aes(x = date, y = drgnp)) +
@@ -296,7 +296,8 @@ The data can be built up using $\Upsilon_t = \boldsymbol{\nu} + \mathbf{A} \Upsi
 
 Given $u_t$,
 $\Upsilon_t$ can be constructed given $p$ pre-sample vectors, $y_{t-1},\dots,y_{t-p}$.
-Often the presample is taken at random across all possible presamples.
+For bootstrapping, 
+often the presample is taken at random across all possible presamples.
 How many possible presamples are there?
 There are the ones in $Z$ plus one additional vector
 (the last vector that would be generated in the recursion, $\Upsilon_T$,
