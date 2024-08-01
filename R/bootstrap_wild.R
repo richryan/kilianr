@@ -43,6 +43,7 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
   tt <- nrow(y)
   pp <- olsobj$p
   KK <- olsobj$K
+  TT <- tt - pp
 
   bootstrap_var_order <- irfobj$var_order
   bootstrap_var_cumsum <- irfobj$var_cumsum
@@ -84,10 +85,26 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
     rU <- matrix(0, KK * pp, tt - pp)
     rydat <- matrix(NA, tt - pp, KK)
 
-    # Initial condition
+    # Initial condition for recursively building sample
+    # used to pick off vector of YY
     rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
-    rY0 <- Y[, rpos_y0, drop = FALSE]
+    # Z matrix from OLS
+    YY <- olsobj$Z[2:(KK * pp + 1), 1:(tt - pp), drop = FALSE]
+    # y_T
+    YYt <- rbind(olsobj$Y[, TT, drop = FALSE], YY[, TT, drop = FALSE])
+    YY <- cbind(YY, YYt[1:(KK * pp), , drop = FALSE])
+
+    rY0 <- YY[, rpos_y0, drop = FALSE]
     rY[1:(KK * pp), 1] <- rY0
+
+    # ==== TO DELETE ===
+
+    # # Initial condition
+    # rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
+    # rY0 <- Y[, rpos_y0, drop = FALSE]
+    # rY[1:(KK * pp), 1] <- rY0
+
+    # ==== END TO DELETE ===
 
     # No iid resampling
     # Recursive design wild bootstrap
