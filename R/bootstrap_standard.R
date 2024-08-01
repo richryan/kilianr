@@ -88,9 +88,11 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
     # Initial condition for recursively building sample
     # used to pick off vector of YY
     rpos_y0 <- floor(runif(1, min = 0, max = 1) * (tt - pp + 1)) + 1
+    # Z matrix from OLS
     YY <- olsobj$Z[2:(KK * pp + 1), 1:(tt - pp), drop = FALSE]
+    # y_T
     YYt <- rbind(olsobj$Y[, TT, drop = FALSE], YY[, TT, drop = FALSE])
-    YY <- cbind(YY, Ytt[1:(KK * pp), , drop = FALSE])
+    YY <- cbind(YY, YYt[1:(KK * pp), , drop = FALSE])
 
     rY0 <- YY[, rpos_y0, drop = FALSE]
     rY[1:(KK * pp), 1] <- rY0
