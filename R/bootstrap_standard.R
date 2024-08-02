@@ -200,8 +200,8 @@ bootstrap_standard <- function(olsobj, irfobj, h, nrep,
     mCIhi <- matrix(virf_matrix + vIRFqtile * vIRFse, nrow = KK^2, ncol = horizon + 1)
   }
 
-  rownames(mCIlo) <- paste0(get_irf_names(var_order_global_oil), "_lo")
-  rownames(mCIhi) <- paste0(get_irf_names(var_order_global_oil), "_hi")
+  rownames(mCIlo) <- paste0(get_irf_names(bootstrap_var_order), "_lo")
+  rownames(mCIhi) <- paste0(get_irf_names(bootstrap_var_order), "_hi")
 
   dat_CIlo <- as_tibble(t(mCIlo)) |>
     mutate(horizon = 0:horizon)
