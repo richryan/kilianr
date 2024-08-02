@@ -220,7 +220,7 @@ irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
 
 dat_irf_global_oil <- irf_global_oil$irf_tidy
 
-nrep <- 2000
+nrep <- 200
 dat_irf_global_oil_mbb <- bootstrap_mbb(olsobj = sol_global_oil, 
                                         irfobj = irf_global_oil, 
                                         nrep = nrep, 
