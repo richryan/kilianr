@@ -17,6 +17,14 @@ for \code{y <- detrend(x, tt = "linear")}, then \code{x} equals \code{y} + linea
 linear trend = \code{x - y}.
 }
 \description{
+Missing values are ignored. For example, suppose the change in production is
+the variable of interest. Generating the variable generates a missing value
+in the first position. A linear trend using \code{detrendcl()} can still be used.
+But missing values in the middle of the series will also be ignored, which is
+probably not the desired outcome. A message is thrown when a missing value is
+encountered.
+}
+\details{
 See the pracma package for more robust commands.
 }
 \examples{
