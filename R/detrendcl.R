@@ -1,5 +1,12 @@
 #' Remove the mean (constant) or linear trend (linear) from a vector.
 #'
+#' Missing values are ignored. For example, suppose the change in production is
+#' the variable of interest. Generating the variable generates a missing value
+#' in the first position. A linear trend using `detrendcl()` can still be used.
+#' But missing values in the middle of the series will also be ignored, which is
+#' probably not the desired outcome. A message is thrown when a missing value is
+#' encountered.
+#'
 #' See the pracma package for more robust commands.
 #'
 #' @param x A vector considered a time series.
