@@ -588,10 +588,11 @@ irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
                         var_cumsum = var_cumsum_global_oil,
                         var_order = var_order_global_oil)
 
+nrep_wild <- 500
 # Implement wild bootstrap
 dat_irf_global_oil_wild <- bootstrap_wild(olsobj = sol_global_oil, 
                                             irfobj = irf_global_oil, 
-                                            nrep = nrep, 
+                                            nrep = nrep_wild, 
                                             h = horizon, 
                                             bootstrap_seed = 676, 
                                           display_progress_bar = TRUE)
