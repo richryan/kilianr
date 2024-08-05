@@ -2,7 +2,7 @@
 % Please edit documentation in R/bootstrap_standard.R
 \name{bootstrap_standard}
 \alias{bootstrap_standard}
-\title{Title}
+\title{Compute confidence intervals using the standard bootstrap.}
 \usage{
 bootstrap_standard(
   olsobj,
@@ -19,10 +19,57 @@ bootstrap_standard(
 )
 }
 \arguments{
-\item{method}{String for method of computing standard errors.}
+\item{olsobj}{An object created by running \code{olsvarc()}}
 
-\item{display_progress_bar}{}
+\item{irfobj}{An object created by running \code{irfvar()}}
+
+\item{h}{A positive integer indicating the horizon of the impulse response}
+
+\item{nrep}{Number of boostrap replications}
+
+\item{method}{String for method of computing standard errors}
+
+\item{standard_factor}{A number for scaling the estimated standard deviations}
+
+\item{hall_percentile_quantiles}{A list of quantiles}
+
+\item{nrep_inside_boot}{Number of boostrap replications for the inside}
+
+\item{bootstrap_seed}{A number for setting the seed for the inside boostrap}
+
+\item{display_progress_bar}{Logical for indicating whether the progress bar should be displayed}
+
+\item{efront_percentile_quantiles}{A number}
+}
+\value{
+A tibble of confidence intervals
 }
 \description{
-Title
+Compute confidence intervals using the standard bootstrap.
+}
+\examples{
+y_global_oil <- kilianLutkepohlCh12Figure12_5 |>
+  mutate(check_oil_supply = detrendcl(oil_supply, tt = "constant")) |>
+  mutate(across(c(oil_supply, agg_demand, rpoil), \(x) detrendcl(x, tt = "constant"))) |>
+  rename(oilsupply = oil_supply,
+         aggdemand = agg_demand) |>
+  select(-date) |>
+  as.matrix()
+
+horizon <- 15
+
+sol_global_oil <- olsvarc(y_global_oil, p = 24)
+var_order_global_oil <- c("oilsupply", "aggdemand", "rpoil")
+var_cumsum_global_oil <- c("response_shock_oilsupply_oilsupply",
+                           "response_shock_oilsupply_aggdemand",
+                           "response_shock_oilsupply_rpoil")
+negative_shocks_global_oil <- c("oilsupply")
+
+irf_global_oil <- irfvar(Ahat = sol_global_oil$Ahat,
+                         B0inv = t(chol(sol_global_oil$SIGMAhat)),
+                         p = sol_global_oil$p, h = horizon,
+                         negative_shocks = negative_shocks_global_oil,
+                         var_cumsum = var_cumsum_global_oil,
+                         var_order = var_order_global_oil)
+dat_irf_global_oil <- irf_global_oil$irf_tidy
 }
