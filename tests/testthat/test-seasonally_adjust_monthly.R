@@ -1,21 +1,43 @@
 test_that("seasonal adjustment works", {
-
-  mytime <- seq(lubridate::ymd('1976-01-01'), lubridate::ymd('2020-12-01'), by='months')
-  N <- length(mytime)
-  y <- 0 + cos(seq(1:N) / 3)
+  # Use example from seasonal package
+  m <- seas(AirPassengers)
+  out_seasonal <- as.vector(t(final(m)))
 
   df <- tibble::tibble(
-    date = mytime,
-    y_nsa = y,
-    y_sa = seasonally_adjust_monthly(y_nsa, date)
+    y_nsa = as.vector(t(AirPassengers)),
+    # see start(AirPassengers) and end(AirPassengers)
+    date = seq(lubridate::ymd('1949-01-01'), lubridate::ymd('1960-12-01'), by='months'),
+    y = seasonally_adjust_monthly(y_nsa, date)
   )
 
-  # ggplot2::ggplot(data = df) +
-  #   ggplot2::geom_line(mapping = ggplot2::aes(x = date, y = y))
-
+  expect_equal(df$y, out_seasonal)
 })
 
 
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+test_that("seasonal adjustment works with missing values padded at start", {
+  # Use example from seasonal package
+  m <- seas(AirPassengers)
+  out_seasonal <- as.vector(t(final(m)))
+
+  df <- tibble::tibble(
+    y_nsa = as.vector(t(AirPassengers)),
+    # see start(AirPassengers) and end(AirPassengers)
+    date = seq(lubridate::ymd('1949-01-01'), lubridate::ymd('1960-12-01'), by='months'),
+  )
+
+  df_na <- tibble::tibble(
+    date = seq(lubridate::ymd('1948-06-01'), lubridate::ymd('1948-12-01'), by='months'),
+  )
+
+  df <- dplyr::bind_rows(df, df_na) |>
+    dplyr::arrange(date)
+
+  df <- df |>
+    dplyr::mutate(y = seasonally_adjust_monthly(y_nsa, date)) |>
+    tidyr::drop_na(y)
+
+  expect_equal(df$y, out_seasonal)
 })
+
+
+

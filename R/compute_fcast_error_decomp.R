@@ -1,6 +1,10 @@
-#' Compute forecast error variance decompositions
+#' Compute how much of the prediction mean squared error is accounted for by each structural shock
 #'
-#' @param solvar A list that is output from olsvarc.R.
+#' The forecast error variance decomposition of the structural model computes
+#' how much of prediction mean squared error of y_{t+h} at horizon h=1,...,H is
+#' accounted for by each structural shock.
+#'
+#' @param solvar A list that is output from running `olsvarc()`.
 #' @param k A number that represents the number of series: y_t is k by 1.
 #' @param p A number that represents the order of the VAR process; that is, the number of lags.
 #' @param h A number that represents the horizon.

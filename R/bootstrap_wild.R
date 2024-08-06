@@ -1,7 +1,7 @@
-#' Title
+#' Compute confidence intervals of a structural VAR(p) model using the wild bootstrap
 #'
-#' @param olsobj
-#' @param irfobj
+#' @param olsobj Least-squares object from running `olsvarc()`
+#' @param irfobj IRF object from running ``.
 #' @param h
 #' @param nrep
 #' @param method String for method of computing standard errors.
