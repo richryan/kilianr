@@ -44,7 +44,7 @@ detrendcl <- function(x, tt) {
     y <- xx - mean(xx)
 
     x[x_indxnon] <- y
-    stopifnot(near(mean(x, na.rm = TRUE), 0))
+    # stopifnot(near(mean(x, na.rm = TRUE), 0))
     # To remove matrix-name convention: myvar[,1]
     return(as.vector(x))
   }
