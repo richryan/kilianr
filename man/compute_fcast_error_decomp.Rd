@@ -2,12 +2,12 @@
 % Please edit documentation in R/compute_fcast_error_decomp.R
 \name{compute_fcast_error_decomp}
 \alias{compute_fcast_error_decomp}
-\title{Compute forecast error variance decompositions}
+\title{Compute how much of the prediction mean squared error is accounted for by each structural shock}
 \usage{
 compute_fcast_error_decomp(solvar, k, p, h, varpos)
 }
 \arguments{
-\item{solvar}{A list that is output from olsvarc.R.}
+\item{solvar}{A list that is output from running \code{olsvarc()}.}
 
 \item{k}{A number that represents the number of series: y_t is k by 1.}
 
@@ -21,7 +21,9 @@ compute_fcast_error_decomp(solvar, k, p, h, varpos)
 A number that represents the percent
 }
 \description{
-Compute forecast error variance decompositions
+The forecast error variance decomposition of the structural model computes
+how much of prediction mean squared error of y_{t+h} at horizon h=1,...,H is
+accounted for by each structural shock.
 }
 \examples{
 myf1 <- fun_compute_fcast_error_decomp(solvar = solvar, k = k, p = p, h = 1, varpos = 4)
