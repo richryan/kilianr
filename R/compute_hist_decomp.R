@@ -1,22 +1,34 @@
 #' Compute historical decomposition
 #'
 #' @param olsvarc_obj Object created by `olsvarc()`
-#' @param rownames Names for returned T - p tibble (most likely `date` from the original data)
+#' @param date The `date` from the original data (trimmed to T - p)
 #' @param var_order Order of variables for structural VAR model
 #'
 #' @return
+#' @importFrom tibble as_tibble
+#' @import dplyr
+#' @importFrom stringr str_replace
 #' @export
 #'
 #' @examples
-compute_hist_decomp <- function(olsvarc_obj, rownames, var_order) {
+# y <- kilianLutkepohlCh12Figure12_5 |>
+#   dplyr::rename(oilsupply = oil_supply,
+#                 aggdemand = agg_demand) |>
+#   dplyr::select(-date)
+# sol <- olsvarc(y, p = 24)
+# hd <- compute_hist_decomp(sol, date = kilianLutkepohlCh12Figure12_5$date, var_order = c("oilsupply", "aggdemand", "rpoil"))
+# plot(hd$date, hd$hd_series_shock_oilsupply_oilsupply, type = "l")
+# plot(hd$date, hd$hd_series_shock_aggdemand_oilsupply + hd$hd_series_shock_aggdemand_aggdemand + hd$hd_series_shock_aggdemand_rpoil, type = "l", col = "red")
+# points(kilianLutkepohlCh12Figure12_5$date, kilianLutkepohlCh12Figure12_5$agg_demand, type = "l")
+compute_hist_decomp <- function(olsvarc_obj, date, var_order) {
 
   # Rename for ease
   sol <- olsvarc_obj
 
-  B0inv <- t(chol(ols$SIGMAhat))
+  B0inv <- t(chol(sol$SIGMAhat))
   B0 <- solve(B0inv)
 
-  tt <- nrow(ols$y)
+  tt <- nrow(sol$y)
   pp <- sol$p
 
   irf <- irfvar(
@@ -29,6 +41,9 @@ compute_hist_decomp <- function(olsvarc_obj, rownames, var_order) {
 
   Ehat <- B0 %*% sol$Uhat
   IRF <- irf$irfm
+
+
+  hdecomp_names_ <- get_irf_names(var_order)
 
   hdecomp_names <-
     str_replace(hdecomp_names_, "response_shock", "hd_series_shock")
@@ -54,6 +69,11 @@ compute_hist_decomp <- function(olsvarc_obj, rownames, var_order) {
     }
   }
 
-  return(hdecomp)
+  # Return tibble
+  hdecomp_t <- t(hdecomp)
+  dat_hdecomp <- as_tibble(hdecomp_t) |>
+    mutate(date = date[(pp+1):tt])
+
+  return(dat_hdecomp)
 }
 
