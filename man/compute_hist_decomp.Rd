@@ -4,12 +4,12 @@
 \alias{compute_hist_decomp}
 \title{Compute historical decomposition}
 \usage{
-compute_hist_decomp(olsvarc_obj, rownames, var_order)
+compute_hist_decomp(olsvarc_obj, date, var_order)
 }
 \arguments{
 \item{olsvarc_obj}{Object created by \code{olsvarc()}}
 
-\item{rownames}{Names for returned T - p tibble (most likely \code{date} from the original data)}
+\item{date}{The \code{date} from the original data (trimmed to T - p)}
 
 \item{var_order}{Order of variables for structural VAR model}
 }
