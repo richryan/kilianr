@@ -3,6 +3,7 @@
 export(bootstrap_standard)
 export(bootstrap_wild)
 export(compute_fcast_error_var_decomp)
+export(compute_hist_decomp)
 export(detrendcl)
 export(irfvar)
 export(olsvarc)
