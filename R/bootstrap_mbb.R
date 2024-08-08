@@ -1,3 +1,40 @@
+#' Compute confidence intervals using the moving-block-bootstrap method.
+#'
+#' @param olsobj Object created by running `olsvarc()`
+#' @param irfobj Object created by running `irfvar()`
+#' @param h Positive integer for horizon
+#' @param nrep Number of reps
+#' @param blen Block length
+#' @param method Method for computing the confidence intervals from bootstrapped statistics
+#' @param standard_factor Positive multiplicative factor for standard method
+#' @param efron_percentile_quantiles Quantiles for Efron's percentile method
+#' @param hall_percentile_quantiles Quantiles for Hall's percentile method
+#' @param bootstrap_seed Seed for random-number generation
+#' @param display_progress_bar Logical for whether progress bar should be displayed
+#'
+#' @return A tibble that reports lower and upper ends of the confidence intervals
+#' @import cli
+#' @export
+#'
+#' @examples
+#' y <- kilianLutkepohlCh12Figure12_5 |>
+#'   dplyr::rename(oilsupply = oil_supply,
+#'                 aggdemand = agg_demand) |>
+#'   dplyr::select(-date)
+#' var_order <- c("oilsupply", "aggdemand", "rpoil")
+#' negative_shocks <- "oilsupply"
+#' var_cumsum <- c("response_shock_oilsupply_oilsupply",
+#'                 "response_shock_oilsupply_aggdemand",
+#'                 "response_shock_oilsupply_rpoil")
+#' sol <- olsvarc(y, p = 24)
+#' irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 15,
+#'               var_order = var_order,
+#'               negative_shocks = negative_shocks,
+#'               var_cumsum = var_cumsum)
+#' dat_ci <- bootstrap_mbb(sol, irf, nrep = 500, blen = 24, method = "standard", standard_factor = 2.0)
+#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_oilsupply_oilsupply, type = "l", ylim = c(-2, 0))
+#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_lo, lty = "dotted", col = "blue")
+#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_hi, lty = "dotted", col = "blue")
 bootstrap_mbb <- function(olsobj, irfobj, h, nrep,
                           blen,
                           method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
