@@ -13,24 +13,24 @@
 #' @export
 #'
 #' @examples
-#' y <- kilianLutkepohlCh12Figure12_5 |>
-#'   dplyr::rename(oilsupply = oil_supply,
-#'                 aggdemand = agg_demand) |>
-#'   dplyr::select(-date)
-#' var_order <- c("oilsupply", "aggdemand", "rpoil")
-#' negative_shocks <- "oilsupply"
-#' var_cumsum <- c("response_shock_oilsupply_oilsupply",
-#'                 "response_shock_oilsupply_aggdemand",
-#'                 "response_shock_oilsupply_rpoil")
-#' sol <- olsvarc(y, p = 24)
-#' irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 15,
-#'               var_order = var_order,
-#'               negative_shocks = negative_shocks,
-#'               var_cumsum = var_cumsum)
-#' dat_ci <- bootstrap_mbb(sol, irf, nrep = 500, blen = 24, method = "standard", standard_factor = 2.0)
-#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_oilsupply_oilsupply, type = "l", ylim = c(-2, 0))
-#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_lo, lty = "dotted", col = "blue")
-#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_hi, lty = "dotted", col = "blue")
+y <- kilianLutkepohlCh12Figure12_5 |>
+  dplyr::rename(oilsupply = oil_supply,
+                aggdemand = agg_demand) |>
+  dplyr::select(-date)
+var_order <- c("oilsupply", "aggdemand", "rpoil")
+negative_shocks <- "oilsupply"
+var_cumsum <- c("response_shock_oilsupply_oilsupply",
+                "response_shock_oilsupply_aggdemand",
+                "response_shock_oilsupply_rpoil")
+sol <- olsvarc(y, p = 24)
+irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 15,
+              var_order = var_order,
+              negative_shocks = negative_shocks,
+              var_cumsum = var_cumsum)
+dat_ci <- bootstrap_wild(sol, irf, nrep = 500, method = "standard", standard_factor = 2.0)
+plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_oilsupply_oilsupply, type = "l", ylim = c(-2, 0))
+lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_lo, lty = "dotted", col = "blue")
+lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_hi, lty = "dotted", col = "blue")
 bootstrap_wild <- function(olsobj, irfobj, h, nrep,
                            method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
                            nrep_inside_boot,
