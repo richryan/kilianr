@@ -4,28 +4,34 @@
 #' @param date The `date` from the original data (trimmed to T - p)
 #' @param var_order Order of variables for structural VAR model
 #'
-#' @return
+#' @return A tibble dataframe that shows how
 #' @importFrom tibble as_tibble
 #' @import dplyr
 #' @importFrom stringr str_replace
 #' @export
 #'
 #' @examples
-# y <- kilianLutkepohlCh12Figure12_5 |>
-#   dplyr::rename(oilsupply = oil_supply,
-#                 aggdemand = agg_demand) |>
-#   dplyr::select(-date)
-# sol <- olsvarc(y, p = 24)
-# hd <- compute_hist_decomp(sol, date = kilianLutkepohlCh12Figure12_5$date, var_order = c("oilsupply", "aggdemand", "rpoil"))
-# plot(hd$date, hd$hd_series_shock_oilsupply_oilsupply, type = "l")
-# plot(hd$date, hd$hd_series_shock_aggdemand_oilsupply + hd$hd_series_shock_aggdemand_aggdemand + hd$hd_series_shock_aggdemand_rpoil, type = "l", col = "red")
-# points(kilianLutkepohlCh12Figure12_5$date, kilianLutkepohlCh12Figure12_5$agg_demand, type = "l")
+#' y <- kilianLutkepohlCh12Figure12_5 |>
+#'   dplyr::rename(oilsupply = oil_supply,
+#'                 aggdemand = agg_demand) |>
+#'   dplyr::select(-date)
+#' sol <- olsvarc(y, p = 24)
+#' hd <- compute_hist_decomp(sol, date = kilianLutkepohlCh12Figure12_5$date, var_order = c("oilsupply", "aggdemand", "rpoil"))
+#' plot(hd$date, hd$hd_series_shock_oilsupply_oilsupply, type = "l")
+#' plot(hd$date, hd$hd_series_shock_aggdemand_oilsupply + hd$hd_series_shock_aggdemand_aggdemand + hd$hd_series_shock_aggdemand_rpoil, type = "l", col = "red")
+#' points(kilianLutkepohlCh12Figure12_5$date, kilianLutkepohlCh12Figure12_5$agg_demand, type = "l")
+#'
+#' # Another example ---------------------------------------------------------
+#' y <- kilianLutkepohlCh02Macro |> select(drgnp, irate, infl)
+#' m <- olsvarc(y, p = 4)
+#' hd <- compute_hist_decomp(m, date = kilianLutkepohlCh02Macro$date, var_order = c("drgnp", "irate", "infl"))
 compute_hist_decomp <- function(olsvarc_obj, date, var_order) {
 
   # Rename for ease
   sol <- olsvarc_obj
 
   B0inv <- t(chol(sol$SIGMAhat))
+  # Inverse of B0inv = B0
   B0 <- solve(B0inv)
 
   tt <- nrow(sol$y)
