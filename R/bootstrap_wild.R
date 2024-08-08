@@ -1,18 +1,36 @@
 #' Compute confidence intervals of a structural VAR(p) model using the wild bootstrap
 #'
 #' @param olsobj Least-squares object from running `olsvarc()`
-#' @param irfobj IRF object from running ``.
-#' @param h
-#' @param nrep
+#' @param irfobj IRF object from running `irfvar()`.
+#' @param h Horizon for IRFs
+#' @param nrep Positive integer for number of bootstrap replications
 #' @param method String for method of computing standard errors.
-#' @param bootstrap_seed
-#' @param display_progress_bar
+#' @param bootstrap_seed Positive integer for seed
+#' @param display_progress_bar Logical for whether to display the progress bar
 #'
-#' @return
+#' @return A tibble dataframe containing upper and lower ends of the confidence intervals associated with impulse response functions.
 #' @import cli
 #' @export
 #'
 #' @examples
+#' y <- kilianLutkepohlCh12Figure12_5 |>
+#'   dplyr::rename(oilsupply = oil_supply,
+#'                 aggdemand = agg_demand) |>
+#'   dplyr::select(-date)
+#' var_order <- c("oilsupply", "aggdemand", "rpoil")
+#' negative_shocks <- "oilsupply"
+#' var_cumsum <- c("response_shock_oilsupply_oilsupply",
+#'                 "response_shock_oilsupply_aggdemand",
+#'                 "response_shock_oilsupply_rpoil")
+#' sol <- olsvarc(y, p = 24)
+#' irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 15,
+#'               var_order = var_order,
+#'               negative_shocks = negative_shocks,
+#'               var_cumsum = var_cumsum)
+#' dat_ci <- bootstrap_mbb(sol, irf, nrep = 500, blen = 24, method = "standard", standard_factor = 2.0)
+#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_oilsupply_oilsupply, type = "l", ylim = c(-2, 0))
+#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_lo, lty = "dotted", col = "blue")
+#' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_hi, lty = "dotted", col = "blue")
 bootstrap_wild <- function(olsobj, irfobj, h, nrep,
                            method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
                            nrep_inside_boot,
