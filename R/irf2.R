@@ -7,7 +7,7 @@
 #' @param standard_deviation_factor Non-negative number to scale up the standard deviation of the bootstrap draws.
 #' @param nrep Number that represents the number of bootstrap draws
 #' @param boot_seed Number to seed the bootstrap
-#' @param cumeffect Logical to indicate whether to cummulate the impulse response
+#' @param cumeffect Logical to indicate whether impulse response should be cummulated
 #'
 #' @return A tibble with second-stage impulse response and upper- and lower-ends that define the confidence interval.
 #' @import tibble

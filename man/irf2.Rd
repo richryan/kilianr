@@ -30,7 +30,7 @@ irf2(
 
 \item{boot_seed}{Number to seed the bootstrap}
 
-\item{cumeffect}{Logical to indicate whether to cummulate the impulse response}
+\item{cumeffect}{Logical to indicate whether impulse response should be cummulated}
 }
 \value{
 A tibble with second-stage impulse response and upper- and lower-ends that define the confidence interval.
