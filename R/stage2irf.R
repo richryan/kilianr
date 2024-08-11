@@ -47,14 +47,14 @@
 #'   mutate(somey = rnorm(n(), mean = 3, sd = 1))
 #'
 #' # Create 2nd-stage IRFs
-#' dat_irf2 <- irf2(y = dat_structural_shocks$somey, x = dat_structural_shocks$shock_oilsupply,
-#'                  p = 12, block_length = 12, standard_deviation_factor = 2, boot_seed = 1, nrep = 500)
+#' dat_irf2 <- stage2irf(y = dat_structural_shocks$somey, x = dat_structural_shocks$shock_oilsupply,
+#'                       p = 12, block_length = 12, standard_deviation_factor = 2, boot_seed = 1, nrep = 500)
 #'
 #' ggplot(data = dat_irf2) +
 #'   geom_line(mapping = aes(x = horizon, y = irf2)) +
 #'   geom_line(mapping = aes(x = horizon, y = irf2_lo), color = "blue", linetype = "dotted") +
 #'   geom_line(mapping = aes(x = horizon, y = irf2_hi), color = "blue", linetype = "dotted")
-irf2 <- function(y, x, p, block_length, standard_deviation_factor, nrep = 2000, boot_seed = 676, cumeffect = FALSE) {
+stage2irf <- function(y, x, p, block_length, standard_deviation_factor, nrep = 2000, boot_seed = 676, cumeffect = FALSE) {
   # Function for making lags
   multilag <- function(x, p) {
     lags <- 1:p
