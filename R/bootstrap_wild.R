@@ -31,6 +31,19 @@
 #' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_oilsupply_oilsupply, type = "l", ylim = c(-2, 0))
 #' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_lo, lty = "dotted", col = "blue")
 #' lines(dat_ci$horizon, dat_ci$response_shock_oilsupply_oilsupply_hi, lty = "dotted", col = "blue")
+#'
+#' # Another example ---------------------------------------------------------
+#'
+#' y <- kilianLutkepohlCh02Macro |>
+#'   dplyr::select(drgnp, irate, infl)
+#'
+#' sol <- olsvarc(y, p = 4)
+#' irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 8,
+#'               var_order = c("drgnp", "irate", "infl"))
+#' dat_ci <- bootstrap_wild(sol, irf, nrep = 500, method = "standard", standard_factor = 2.0)
+#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_infl_irate, type = "l", ylim = c(-0.05, 0.15))
+#' lines(dat_ci$horizon, dat_ci$response_shock_infl_irate_lo, lty = "dotted", col = "blue")
+#' lines(dat_ci$horizon, dat_ci$response_shock_infl_irate_hi, lty = "dotted", col = "blue")
 bootstrap_wild <- function(olsobj, irfobj, h, nrep,
                            method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
                            nrep_inside_boot,
