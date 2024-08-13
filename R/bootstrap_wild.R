@@ -35,15 +35,15 @@
 #' # Another example ---------------------------------------------------------
 #'
 #' y <- kilianLutkepohlCh02Macro |>
-#'   dplyr::select(drgnp, irate, infl)
+#'   dplyr::select(drgnp, infl)
 #'
 #' sol <- olsvarc(y, p = 4)
 #' irf <- irfvar(Ahat = sol$Ahat, B0inv = t(chol(sol$SIGMAhat)), p = sol$p, h = 8,
-#'               var_order = c("drgnp", "irate", "infl"))
-#' dat_ci <- bootstrap_wild(sol, irf, nrep = 500, method = "standard", standard_factor = 2.0)
-#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_infl_irate, type = "l", ylim = c(-0.05, 0.15))
-#' lines(dat_ci$horizon, dat_ci$response_shock_infl_irate_lo, lty = "dotted", col = "blue")
-#' lines(dat_ci$horizon, dat_ci$response_shock_infl_irate_hi, lty = "dotted", col = "blue")
+#'               var_order = c("drgnp", "infl"))
+#' dat_ci <- bootstrap_standard(sol, irf, nrep = 500, method = "standard", standard_factor = 2.0)
+#' plot(irf$irf_tidy$horizon, irf$irf_tidy$response_shock_infl_drgnp, type = "l", ylim = c(-0.15, 0.15))
+#' lines(dat_ci$horizon, dat_ci$response_shock_infl_drgnp_lo, lty = "dotted", col = "blue")
+#' lines(dat_ci$horizon, dat_ci$response_shock_infl_drgnp_hi, lty = "dotted", col = "blue")
 bootstrap_wild <- function(olsobj, irfobj, h, nrep,
                            method = "standard", standard_factor, efron_percentile_quantiles, hall_percentile_quantiles,
                            nrep_inside_boot,
@@ -131,7 +131,9 @@ bootstrap_wild <- function(olsobj, irfobj, h, nrep,
     # No iid resampling
     # Recursive design wild bootstrap
     reta1 <- matrix(rnorm(tt - pp, mean = 0, sd = 1), nrow = 1)
-    reta <- rbind(reta1, reta1, reta1)
+    # Kronecker product to repeat reta1 like [reta1; reta1; reta1]; ie, bind rows
+    reta <- matrix(1, nrow = KK, ncol = 1) %x% reta1
+
     rU[1:KK, 1:(tt - pp)] <- U[1:KK, 1:(tt - pp)] * reta
 
     for (i in 2:(tt - pp + 1)) {
