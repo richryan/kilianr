@@ -1,10 +1,11 @@
 Package: kilianr
-Title: What the Package Does (One Line, Title Case)
+Title: Tools for structural vector autoregressive analysis
 Version: 0.0.0.9000
 Authors@R: 
     person("Rich", "Ryan", , "richryan@csub.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6648-5413"))
-Description: What the package does (one paragraph).
+Description: A system tools for working with time-series data,
+based on "Structural Vector Autoregressive Analysis."
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
