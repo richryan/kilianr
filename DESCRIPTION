@@ -1,21 +1,22 @@
 Package: kilianr
 Title: Tools for structural vector autoregressive analysis
-Version: 0.0.0.9000
+Version: 0.0.1.0000
 Authors@R: 
     person("Rich", "Ryan", , "richryan@csub.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6648-5413"))
-Description: A system tools for working with time-series data,
-based on "Structural Vector Autoregressive Analysis."
+Description: A system tools for working with time-series data, based on
+    "Structural Vector Autoregressive Analysis."
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Depends: 
-    R (>= 2.10)
-LazyData: true
+    R (>= 4.10)
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-VignetteBuilder: knitr
+VignetteBuilder: 
+    knitr
 Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
