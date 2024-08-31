@@ -8,7 +8,7 @@ Description: A system tools for working with time-series data, based on
     "Structural Vector Autoregressive Analysis."
 License: MIT + file LICENSE
 Depends: 
-    R (>= 4.10),
+    R (>= 4.4.0),
     cli (>= 3.6.3),
     dplyr (>= 1.1.4),
     expm (>= 0.999-9),
