@@ -14,6 +14,12 @@
 #' @examples
 #' seasonally_adjust(data$some_series, data$date)
 seasonally_adjust_monthly <- function(x, date) {
+  if (!requireNamespace("seasonal", quietly = TRUE)) {
+    stop(
+      "Package \"seasonal\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
 
   N <- length(x)
 

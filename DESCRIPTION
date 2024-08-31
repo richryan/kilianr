@@ -12,6 +12,7 @@ Depends:
     cli (>= 3.6.3),
     dplyr (>= 1.1.4),
     expm (>= 0.999-9),
+    ggplot2 (>= 3.5.1),
     lubridate (>= 1.9.3),
     purrr (>= 1.0.2),
     stringr (>= 1.5.1),
@@ -28,4 +29,5 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-
+Imports: 
+    seasonal
