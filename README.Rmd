@@ -15,42 +15,11 @@ knitr::opts_chunk$set(
 
 # kilianr
 
-<!-- badges: start -->
-<!-- badges: end -->
+A system of tools for working with time-series data,
+influenced by the book *Structural Vector Autoregressive Analysis*
+by Lutz Kilian and Helmut L&uuml;tkepohl.
 
-The goal of kilianr is to reproduce Lutz Kilian's results from  
-
-> Kilian, Lutz. 2009. "Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market." American Economic Review, 99 (3): 1053–69.  DOI: 10.1257/aer.99.3.1053
-
-Kilian's insights about the identification of oil shocks---and associated tools---are
-then used to investigate how oil shocks affect Kern County, California.
-In other words,
-the goal is not creating an R package, per se;
-rather,
-the goal is using Kilian's tools.
-This goal has dictated how the package is constructed.
-More packages are imported and suggested than what are strictly necessary
-to reproduce Kilian's results.
-
-As a waypoint, 
-I am attempting to publish a description of the package in [Journal of Open Source Software](https://joss.theoj.org/).
-The draft is included in `joss/paper.md`.
-To help cite work in the paper, I installed the RStudio Addin [citr](https://github.com/crsh/citr),
-which makes accessing entries in a .bib file easier.
-And the RStudio Addin [wordcountaddin](https://github.com/benmarwick/wordcountaddin),
-which provides a function that counts the number of words in a highlighted region.
-
-**NOTE: This package uses the package `seasonal`, 
-which is large.
-
-## Notes on formatting documentation using `roxygen2`
-
-For formatting documentation, I used
-https://roxygen2.r-lib.org/articles/formatting.html
-
-The link includes how to make a table.
-
-<!-- ## Installation -->
+## Installation
 
 <!-- You can install the development version of kilianr from [GitHub](https://github.com/) with: -->
 
@@ -58,6 +27,69 @@ The link includes how to make a table.
 <!-- # install.packages("devtools") -->
 <!-- devtools::install_github("richryan/kilianr") -->
 <!-- ``` -->
+
+## Introduction to the package
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The kilianr package provides a system of tools for working with time-series data,
+influenced by the book *Structural Vector Autoregressive Analysis*
+by Lutz Kilian and Helmut L&uuml;tkepohl.
+I recommend people purchase a copy of *Structural Vector Autoregressive Analysis* to use together with the kilianr package.
+
+Functions for estimating vector autoregressive models are provided.
+Given short-run identifying assumptions,
+structural estimates can be computed using the Cholesky decomposition.
+
+<!-- A primary goal of kilianr is providing tools  -->
+<!-- that allow researchers to produce results like those found in Lutz Kilian's work on the global market for crude oil: -->
+
+A good example of what is achievable using the tools provided by the kilianr package is Kilian's article
+
+> Kilian, Lutz. 2009. "Not All Oil Price Shocks Are Alike: Disentangling Demand and Supply Shocks in the Crude Oil Market." American Economic Review, 99 (3): 1053–69.  DOI: 10.1257/aer.99.3.1053
+
+The results of the article have been updated here: TKTK
+
+<!-- Kilian's insights about the identification of oil shocks---and associated tools---are -->
+<!-- then used to investigate how oil shocks affect Kern County, California. -->
+<!-- In other words, -->
+<!-- the goal is not creating an R package, per se; -->
+<!-- rather, -->
+<!-- the goal is using Kilian's tools. -->
+<!-- This goal has dictated how the package is constructed. -->
+<!-- More packages are imported and suggested than what are strictly necessary -->
+<!-- to reproduce Kilian's results. -->
+
+As a waypoint,
+I am attempting to publish a description of the package in [Journal of Open Source Software](https://joss.theoj.org/).
+The draft is included in `joss/paper.md`.
+
+<!-- To help cite work in the paper, I installed the RStudio Addin [citr](https://github.com/crsh/citr), -->
+<!-- which makes accessing entries in a .bib file easier. -->
+<!-- And the RStudio Addin [wordcountaddin](https://github.com/benmarwick/wordcountaddin), -->
+<!-- which provides a function that counts the number of words in a highlighted region. -->
+
+## Evolving philosophy that guides the package
+
+The package is aimed at applied economists.
+
+Which means that the package anticipates that the user will have have many R packages installed from the tidy ecosystem.
+The package therefore *depends* on having functions available from these package.
+This, for example, allows me to return matricies as tibbles,
+which are easier to manipulate,
+without having to preface chains of tidy statements with dplyr:: or tidyr::.
+
+The choice is rather heavy-handed, admittedly.
+<!-- Alternative  -->
+
+<!-- For example, -->
+<!-- I maintain that many users will have packages like dplyr and ggplot2 installed on their systems, because -->
+<!-- they prefer to use the tidy ecosystem for working with data. -->
+<!-- In addition, -->
+<!-- I make use of the function `seas()` from the seasonal package. -->
+<!-- While this is a heavy package, -->
+<!-- seasonal adjustment is a common task. -->
 
 <!-- ## Example -->
 
@@ -83,3 +115,7 @@ The link includes how to make a table.
 <!-- ``` -->
 
 <!-- In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN. -->
+
+## Citation
+
+TKTK

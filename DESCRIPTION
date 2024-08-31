@@ -8,7 +8,15 @@ Description: A system tools for working with time-series data, based on
     "Structural Vector Autoregressive Analysis."
 License: MIT + file LICENSE
 Depends: 
-    R (>= 4.10)
+    R (>= 4.10),
+    cli (>= 3.6.3),
+    dplyr (>= 1.1.4),
+    expm (>= 0.999-9),
+    lubridate (>= 1.9.3),
+    purrr (>= 1.0.2),
+    stringr (>= 1.5.1),
+    tibble (>= 3.2.1),
+    tidyr (>= 1.3.1)    
 Suggests: 
     knitr,
     rmarkdown,
@@ -20,3 +28,4 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+

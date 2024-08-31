@@ -6,7 +6,10 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of kilianr is to reproduce Lutz Kilian’s results from
+The kilianr package provides a system of tools for working with
+time-series data, based on the book “Structural Vector Autoregressive
+Analysis” by Lutz Kilian and Helmut Lütkepohl. The goal of kilianr is to
+reproduce Lutz Kilian’s results from
 
 > Kilian, Lutz. 2009. “Not All Oil Price Shocks Are Alike: Disentangling
 > Demand and Supply Shocks in the Crude Oil Market.” American Economic
@@ -23,9 +26,14 @@ As a waypoint, I am attempting to publish a description of the package
 in [Journal of Open Source Software](https://joss.theoj.org/). The draft
 is included in `joss/paper.md`. To help cite work in the paper, I
 installed the RStudio Addin [citr](https://github.com/crsh/citr), which
-makes accessing entries in a .bib file easier.
+makes accessing entries in a .bib file easier. And the RStudio Addin
+[wordcountaddin](https://github.com/benmarwick/wordcountaddin), which
+provides a function that counts the number of words in a highlighted
+region.
 
 \*\*NOTE: This package uses the package `seasonal`, which is large.
+
+## Philosophy of
 
 ## Notes on formatting documentation using `roxygen2`
 
