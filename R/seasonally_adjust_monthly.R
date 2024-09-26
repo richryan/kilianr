@@ -5,6 +5,7 @@
 #'
 #' @param x A vector.
 #' @param date A vector of monthly dates.
+#' @param ... Other options passed to seasonal::seas().
 #'
 #' @returns A vector.
 #' @import seasonal
@@ -39,7 +40,7 @@ seasonally_adjust_monthly <- function(x, date) {
     xx,
     start = c(year(min(date_xx)), month(min(date_xx))),
     frequency = 12
-  )))
+  ), ...))
 
   x[x_indxnon] <- as.numeric(junk)
 

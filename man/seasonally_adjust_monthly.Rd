@@ -10,6 +10,8 @@ seasonally_adjust_monthly(x, date)
 \item{x}{A vector.}
 
 \item{date}{A vector of monthly dates.}
+
+\item{...}{Other options passed to seasonal::seas().}
 }
 \value{
 A vector.
