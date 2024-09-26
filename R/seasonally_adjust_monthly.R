@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' seasonally_adjust(data$some_series, data$date)
-seasonally_adjust_monthly <- function(x, date) {
+seasonally_adjust_monthly <- function(x, date, ...) {
   # Check for availability of suggested package seasonal
   if (!requireNamespace("seasonal", quietly = TRUE)) {
     stop(

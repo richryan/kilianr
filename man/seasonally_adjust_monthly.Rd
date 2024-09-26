@@ -4,7 +4,7 @@
 \alias{seasonally_adjust_monthly}
 \title{Seasonally adjust monthly data}
 \usage{
-seasonally_adjust_monthly(x, date)
+seasonally_adjust_monthly(x, date, ...)
 }
 \arguments{
 \item{x}{A vector.}
