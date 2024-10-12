@@ -1,0 +1,31 @@
+---
+title: "forecast-error-variance-decomposition"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{forecast-error-variance-decomposition}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction to computing a forecast error variance decomposition
+
+A structural VAR model
+allows us to answer how much of the forecast error variance
+of $y_{t+h}$ at horizon $h=0,1,\dots,H$ is accounted for by each structural shock, $k=1,\dots,K$.
+Sometimes the forecast error variance is referred to as the prediction mean-squared error.
+In a stationary model,
+as $h\rightarrow \infty$,
+the limit of the forecast error variance decomposition is the variance decomposition of $y_t$.
+
+```{r setup}
+library(kilianr)
+
+
+```
