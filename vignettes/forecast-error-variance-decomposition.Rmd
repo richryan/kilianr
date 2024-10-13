@@ -26,6 +26,77 @@ the limit of the forecast error variance decomposition is the variance decomposi
 
 ```{r setup}
 library(kilianr)
+library(patchwork) # for combining plots
 
-
+var_order_stock_market <- c("dprod", "rea", "rpoil", "dd")
+y_stock_market <- kilianLutkepohlCh04Table4_1 |> select(all_of(var_order_stock_market))
+sol_stock_market <- olsvarc(y_stock_market, p = 24)
 ```
+
+The following reproduces figure 4.1 in KL:
+```{r}
+horizon <- 15
+irf_stock_market <- irfvar(sol_stock_market$Ahat, B0inv = t(chol(sol_stock_market$SIGMAhat)), 
+                           p = sol_stock_market$p, h = horizon, var_order = var_order_stock_market,
+                           negative_shocks = c("dprod"),
+                           var_cumsum = c("response_shock_dd_dprod", "response_shock_dd_rea", "response_shock_dd_rpoil"))
+dat_irf_stock_market <- irf_stock_market$irf_tidy
+head(dat_irf_stock_market)
+```
+
+```{r}
+plt_oil_supply <- ggplot(data = dat_irf_stock_market) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_dd_dprod)) +
+  geom_hline(yintercept = 0) + labs(title = "Oil supply shock") +
+  xlab("Months") + ylab("Real dividends (percent)") +
+  ylim(-2, 2)
+
+plt_aggdemand <- ggplot(data = dat_irf_stock_market) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_dd_rea)) +
+  geom_hline(yintercept = 0) + labs(title = "Aggregate demand shock") +
+  xlab("Months") + ylab("Real dividends (percent)") +
+  ylim(-2, 2)
+
+plt_price_oil <- ggplot(data = dat_irf_stock_market) +
+  geom_line(mapping = aes(x = horizon, y = response_shock_dd_rpoil)) +
+  geom_hline(yintercept = 0) + labs(title = "Oil-specific demand shock") +
+  xlab("Months") + ylab("Real dividends (percent)") +
+  ylim(-2, 2)
+
+plt_oil_supply + plt_aggdemand + plt_price_oil
+```
+
+The forecast error variance decomposition 
+```{r}
+# dat_fevd <- tribble(
+#   ~Horizon, ~`Oil supply shock`, ~`Aggregate demand shock`, ~`Oil-specific supply shock`, ~`Residual shock`,
+# ) 
+
+dat_fevd <- tribble(
+  ~Horizon,
+  1,
+  2,
+  3,
+  12,
+  600
+)
+
+myf1 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 1) 
+myf2 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 2)
+myf3 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 3)
+myf12 <- compute_fcast_error_var_decomp(sol_stock_market, var_name = "dd", h = 12)
+myf600 <- compute_fcast_error_var_decomp(sol_stock_market, var_name = "dd", h = 600)
+
+colnames(myf1) <- names(dat_fevd)[2:ncol(dat_fevd)]
+colnames(myf2) <- names(dat_fevd)[2:ncol(dat_fevd)]
+colnames(myf3) <- names(dat_fevd)[2:ncol(dat_fevd)]
+colnames(myf12) <- names(dat_fevd)[2:ncol(dat_fevd)]
+colnames(myf600) <- names(dat_fevd)[2:ncol(dat_fevd)]
+
+dat_fevd <- dat_fevd |> 
+  bind_rows(as_tibble(myf1)) |> 
+  bind_rows(as_tibble(myf2)) 
+
+knitr::kable(round(dat_fevd, 1))
+```
+

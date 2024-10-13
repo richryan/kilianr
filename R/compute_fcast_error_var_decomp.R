@@ -15,8 +15,13 @@
 #'
 #' @examples
 #' myf1 <- compute_fcast_var_error_var_decomp(solvar = solvar, k = k, p = p, h = 1, varpos = 4)
-compute_fcast_error_var_decomp <- function(solvar, k, p, h, varpos) {
+compute_fcast_error_var_decomp <- function(solvar, h, var_name) {
   SIGMAhat <- solvar$SIGMAhat
+
+  varpos <- match(var_name, names(solvar$y))
+
+  p <- solvar$p
+  k <- solvar$K
 
   Ahat <- solvar$Ahat
 
@@ -50,5 +55,6 @@ compute_fcast_error_var_decomp <- function(solvar, k, p, h, varpos) {
     VC[j, ] <- TH3[j, ] / TH4
   }
 
-  return(t(VC[, k]) * 100)
+  return(t(VC[, varpos]) * 100)
+  # return(t(VC) * 100)
 }
