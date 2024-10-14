@@ -68,10 +68,7 @@ plt_oil_supply + plt_aggdemand + plt_price_oil
 
 The forecast error variance decomposition 
 ```{r}
-# dat_fevd <- tribble(
-#   ~Horizon, ~`Oil supply shock`, ~`Aggregate demand shock`, ~`Oil-specific supply shock`, ~`Residual shock`,
-# ) 
-
+# Create dataset at different horizons
 dat_fevd <- tribble(
   ~Horizon,
   1,
@@ -81,22 +78,36 @@ dat_fevd <- tribble(
   600
 )
 
-myf1 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 1) 
-myf2 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 2)
-myf3 <- compute_fcast_error_var_decomp(sol_stock_market,  var_name = "dd", h = 3)
-myf12 <- compute_fcast_error_var_decomp(sol_stock_market, var_name = "dd", h = 12)
-myf600 <- compute_fcast_error_var_decomp(sol_stock_market, var_name = "dd", h = 600)
-
-colnames(myf1) <- names(dat_fevd)[2:ncol(dat_fevd)]
-colnames(myf2) <- names(dat_fevd)[2:ncol(dat_fevd)]
-colnames(myf3) <- names(dat_fevd)[2:ncol(dat_fevd)]
-colnames(myf12) <- names(dat_fevd)[2:ncol(dat_fevd)]
-colnames(myf600) <- names(dat_fevd)[2:ncol(dat_fevd)]
+# Compute the forecast error variance decompositions
+dat_fevd <- dat_fevd |> 
+  mutate(percent_explained = map(Horizon, \(x) as_tibble(compute_fcast_error_var_decomp(h = x, solvar = sol_stock_market, var_name = "dd"))))
 
 dat_fevd <- dat_fevd |> 
-  bind_rows(as_tibble(myf1)) |> 
-  bind_rows(as_tibble(myf2)) 
+  unnest(percent_explained) |> 
+  rename(`Oil supply shock` = dprod,
+         `Aggregate demand shock` = rea,
+         `Oil-specific demand shcok` = rpoil,
+         `Residual shock` = dd)
 
 knitr::kable(round(dat_fevd, 1))
+```
+
+It is also possible to let $h \rightarrow \infty$.
+The function `compute_fcast_error_var_decomp()` can accept `Inf`,
+which will increase the horizon ($h$) until the 
+percent of $h$-step ahead forecast error variance explained by the
+structural shocks converges.
+```{r}
+check_Inf <- compute_fcast_error_var_decomp(solvar = sol_stock_market, h = Inf, var_name = "dd", eps = 1e-3)
+```
+
+The percentage explained is within tolerance at horizon `r check_Inf$horizon`.
+
+```{r}
+ggplot(data = check_Inf) +
+  geom_line(mapping = aes(x = horizon, y = dd)) +
+  geom_line(mapping = aes(x = horizon, y = dprod), color = "red") +
+  geom_line(mapping = aes(x = horizon, y = rea), color = "green") +  
+  geom_line(mapping = aes(x = horizon, y = rpoil), color = "blue") 
 ```
 
