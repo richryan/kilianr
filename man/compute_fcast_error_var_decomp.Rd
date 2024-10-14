@@ -4,21 +4,19 @@
 \alias{compute_fcast_error_var_decomp}
 \title{Compute how much of the prediction mean squared error is accounted for by each structural shock}
 \usage{
-compute_fcast_error_var_decomp(solvar, k, p, h, varpos)
+compute_fcast_error_var_decomp(solvar, h, var_name, eps = 1e-04)
 }
 \arguments{
 \item{solvar}{A list that is output from running \code{olsvarc()}.}
 
-\item{k}{A number that represents the number of series: y_t is k by 1.}
-
-\item{p}{A number that represents the order of the VAR process; that is, the number of lags.}
-
 \item{h}{A number that represents the horizon.}
 
-\item{varpos}{A number that represents position of the series.}
+\item{eps}{A number to check the absolute difference between percent of h-step ahead forecast error variance explained.}
+
+\item{varpos}{A string that names the variable to be explained.}
 }
 \value{
-A number that represents the percent
+If h is finite, a vector of numbers that represents the percent explained; otherwise, a tibble of the percent explained at different horizons.
 }
 \description{
 The forecast error variance decomposition of the structural model computes
@@ -26,5 +24,7 @@ how much of prediction mean squared error of y_{t+h} at horizon h=1,...,H is
 accounted for by each structural shock.
 }
 \examples{
-myf1 <- compute_fcast_var_error_var_decomp(solvar = solvar, k = k, p = p, h = 1, varpos = 4)
+y_stock_market <- kilianLutkepohlCh04Table4_1 |> select(all_of(var_order_stock_market))
+sol_stock_market <- olsvarc(y_stock_market, p = 24)
+compute_fcast_error_var_decomp(solvar = sol_stock_market, h = 3, var_name = "dd")
 }
