@@ -48,7 +48,7 @@ compute_fcast_error_var_decomp <- function(solvar, h, var_name, eps = 1e-4) {
 compute_fcast_error_var_decomp_finite <- function(solvar, h, var_name) {
   SIGMAhat <- solvar$SIGMAhat
 
-  varpos <- match(var_name, names(solvar$y))
+  varpos <- match(var_name, colnames(solvar$y))
 
   p <- solvar$p
   k <- solvar$K
@@ -96,6 +96,6 @@ compute_fcast_error_var_decomp_finite <- function(solvar, h, var_name) {
     ret <- t(VC[, varpos]) * 100
   }
 
-  colnames(ret) <- names(solvar$y)
+  colnames(ret) <- colnames(solvar$y)
   return(ret)
 }
